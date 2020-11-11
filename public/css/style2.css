@@ -1,0 +1,54 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+html,
+body{
+    background-color: #e3e8ec;
+    height: auto;
+    width: 100%;
+    direction: rtl;
+    font-family: 'Amiri', sans-serif;
+}
+
+
+html body h1{height: 80px; line-height: 80px; text-align: center; font-size: 25px; background-color: #FFF; border-bottom: 1px solid #DDD; color: #888; width: 100%;}
+
+html body h3{font-size: 17px; border-bottom: 1px solid #DDD; width: 100%; color: #888; padding-bottom: 3px;}html body  .right span{line-height: 35px; font-weight: bold; color: #888;font-size: 17px; }
+
+html body input{font-family: 'Amiri',sans-serif; font-size: 18 px; height: 35px; width: 100%; border: 1px solid #DDD; padding-right: 10px; color: #444; font-size: 15px;}
+
+html body input:focus{border: 1px solid #0d4ace;}
+
+html body input[type="submit"]{
+    width: 14%; border: none; height: 37px; font-size: 15px;  display: block; color: #fff; background-color: #0D4ACE; cursor: pointer; outline: none; float: left; font-family: Amiri ; padding-right: 0; 
+}
+
+html body form.special{height: auto; background-color: black; width: 768px; margin: 110px auto; background-color: #FFF;padding: 25px;}
+
+.data{
+     height: auto; width: 100%; padding: 20px 100px;
+}
+
+.data .row:first-child{height: auto; width: 100%; overflow: hidden;
+}
+
+.data .row{
+    height: auto; width: 100%; overflow: hidden; margin-top: 20px;
+}
+
+.data .row .left{
+    width: 70%; float: left; height: 35px; position: relative;
+}
+
+.data .row .left i{
+   position: absolute; top: 8px; left: 15px; color: #888;
+}
+
+.data .row .right{
+     width: 30%; float: right; height: 35px;
+}
+ ::placeholder{font-size: 15px; color: #888; font-family: 'Amiri', sans-serif; font-weight: normal;}
+  

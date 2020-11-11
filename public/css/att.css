@@ -1,0 +1,134 @@
+html body .m1{  
+    height: 50px; width: 80px; background-color: #0D4ACE; color: #fff; position: fixed; top: 500px; right: 10px;
+}
+.fixed{
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: #FFF; 
+    z-index: 30; display: block; height: 100%; width: 100%; opacity: 1; text-align: center;
+}
+.fixed .spinner {
+    height: 50px; width: 50px; border-radius: 50%; background-color: transparent; border: 3px solid #888; 
+    border-top: 3px solid #000; position: relative; top: 45%; 
+    animation: moving 1s linear infinite; display: inline-block;
+}
+.db {
+    width: 100%; height: auto; margin: auto; margin-bottom: 25px; background-color: #FFF; padding: 15px 20px;
+}
+.db .m2{
+    margin: auto;
+}
+.db ,m2 .m3{
+    text-align: center;
+}
+.db .m2 .row{
+    height: auto; width: 100%; overflow: hidden; margin-top: 15px; padding: 0 200px;position:relative;
+}
+#name{
+    width: 85%; float: right;
+}
+#search-btn{
+    float: right; height: 35px; width: 15%; background-color: #0D4ACE; color: #FFF; 
+    outline: none; cursor: pointer; border: none;position: relative;
+}
+.db .database {
+    اheight: auto; border: 1px solid #DDD; margin: 15px auto 0 auto; border-top: none;margin-top:5%;
+}
+.db .database .row {
+    height: 50px; width: 100%; border-bottom: 1px solid #DDD;
+}
+.db .database .row .rect {
+    height: 100%; float: right; border-left: 1px solid #DDD; text-align: center;
+}
+.db .database .row .rect .code-number{
+    line-height: 50px; color: #888;
+}
+.db .database .att{
+    height: 50px; width: 100%; border-bottom: 1px solid #DDD; 
+    background-color: rgba(0, 0, 0, 0.65); border-bottom: none; font-size: 18px;
+}
+.db .database .att .rect{
+    height: 100%; float: right; border-left: 1px solid #DDD; text-align: center;
+}
+.container_message0 {
+    position: fixed; z-index: 9999; top: 0; bottom: 0; left: 0; right: 0; 
+    display: flex; justify-content: center; align-items: center; display: none
+}
+.container_message0 .content{
+    height: auto; width: 450px; max-width: 95%; padding: 12px; 
+    border-radius: 4px; box-shadow: 0 12px 50px #CCC; background-color: #fff;
+}
+#heading_now{
+    font-size: 20px; color: #888; border-bottom: none; text-align: center; padding: 0;
+}
+#div_btn{
+    height: auto; width: 100%; margin-top: 8px; text-align: right;
+}
+#btnCClose0{
+    height: 37px; width: 30%; background-color: #0072ff; color: #fff; border-radius: 4px; 
+    outline: none; cursor: pointer; border: none; font-size: 20px; font-weight: bold; border: #076fef
+}
+#col{
+    position: absolute;
+    display: block;
+    width: 7%;
+    text-align: center;
+    font-size: 23px;
+    margin-right: 67%;
+}
+#btnSubmit{
+    width: 10%;
+    height: 41px;
+    font-size: 18px;
+    margin-left: -25%;
+    margin-top: -78px;
+}
+#DBdata{
+    height: 50px; width: 100%; border-bottom: 1px solid #DDD;  
+}
+#EData{
+     height: 100%; float: right; border-left: 1px solid #DDD; text-align: center;
+}
+#EcodeN,.db .database .row .rect .code-number{
+    line-height: 50px; color: #888;font-size: 14px;
+}
+#Font{
+    font-size:20px;
+}
+#NavBar{
+    width: 100%; height: 100%;font-size:17px;
+}
+.db .database .row .rect button{
+    display: block;
+    width: 30%;
+    line-height: 50px;
+    float: right;
+    height: 100%;
+    outline: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    font-family: Amiri;
+}
+@media(max-width:724px){
+    #NavBar{font-size:15px;}
+    #EcodeN,.db .database .row .rect .code-number{font-size:8px;}
+    .db .database .row .rect button{font-size:8px;}
+    /*#name{margin-right: -61%;}
+    #search-btn{width: 35%;}
+    #btnSubmit{margin-left: -44%;width: 17%;height: 60px;}
+    #col{width: 18%;}*/
+}
+@media(max-width:870px){
+       #col{ margin-right: 56%;}
+}
+@media(max-width:1023px){
+    #EcodeN,.db .database .row .rect .code-number{font-size:11px;}
+}@media(max-width:813px){
+    #EcodeN,.db .database .row .rect .code-number{font-size:8px;}
+}
+@media(max-width:648px){
+    #NavBar{font-size:12px;}
+    #EcodeN,.db .database .row .rect .code-number{font-size:7px;}
+    #name{margin-right: -78.5%;width: 143%;}
+    #search-btn{width: 35%;}
+    #col{margin-right: 43%;}
+}

@@ -1,0 +1,13 @@
+# lsapi_phpini /home/zagllgto/public_html/php.ini
+
+
+
+RewriteEngine On
+RewriteCond %{SERVER_PORT} 80
+RewriteCond %{HTTP_HOST} ^ostazy\.co$ [OR]
+RewriteCond %{HTTP_HOST} ^www\.ostazy\.co$
+RewriteRule ^(.*)$ https://ostazy.co/$1 [R=301,L]
+
+RewriteEngine on
+RewriteRule ^$ public/ [L]
+RewriteRule ((?s).*) public/$1 [L]
