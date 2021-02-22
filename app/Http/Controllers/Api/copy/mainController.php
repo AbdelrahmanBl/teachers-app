@@ -111,7 +111,7 @@ class mainController extends Controller
             return Helper::returnError(Lang::get('auth.failed'));
             }
 
-            /*$token    =*/ Helper::loginUsingId($model_select);
+            /*$token    =*/ Helper::loginUsingId($model_select,$model_data->remember_token);
         return Helper::return([
             'access_token'   => $model_data->remember_token,//$token,
             'type'           => $model_data->type,
