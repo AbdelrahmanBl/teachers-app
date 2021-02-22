@@ -49,7 +49,7 @@ class mainController extends Controller
         return Helper::return([
             'key1'     => $header_key,
             'key2'     => $oath_key,
-            'test' => 0
+            'test' => 100
         ]);
     }catch(Exception $e){
       return Helper::returnError(Helper::returnException($e));
