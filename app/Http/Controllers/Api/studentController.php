@@ -14,7 +14,6 @@ use App\Models\Subscrption;
 use App\Models\Notification;
 use App\Models\Message;
 use App\Models\Appointment;
-use App\Models\TempStudent;
 
 use App\Helper;
 use validate;
@@ -69,13 +68,13 @@ class studentController extends Controller
           $model_select->where('exam_requests.teacher_id',$teacher_id);//$where[] = ['exam_requests.teacher_id',$teacher_id]; 
         $model_data    = $model_select->join('users','exam_requests.teacher_id','users.id')->join('subscrptions','exam_requests.teacher_id','subscrptions.teacher_id')->join('exams','exam_requests.exam_id','exams.id')->select($select)->orderBy('exam_requests.created_at','DESC')->paginate($paginate);
 
-         $where = array(
-          'subscrptions.student_id'  => $student_id,
-          'subscrptions.status'      => 'ON',
-        );
+        // $where = array(
+        //   'subscrptions.student_id'  => $student_id,
+        //   'subscrptions.status'      => 'ON',
+        // );
         $select = array('users.id','users.first_name','users.last_name');
-        $teachers = Subscrption::where($where)->join('users','subscrptions.teacher_id','users.id')->select($select)->get();
-
+        $model_select  = $model->where($where);  
+        $teachers = $model_select->join('users','exam_requests.teacher_id','users.id')->join('subscrptions','exam_requests.teacher_id','subscrptions.teacher_id')->join('exams','exam_requests.exam_id','exams.id')->select($select)->get();
         if(count($teachers) > 1){
         $teacher_arr = array();
         foreach($teachers as $teacher){
@@ -86,17 +85,22 @@ class studentController extends Controller
           'status'          => 'WAITING',
 
         );
-        $teachers_data = $model::where($where)->whereIn('teacher_id',$teacher_arr)->get();
-        $teachers_all  = array();
+        // $teachers_data = $model::where($where)->whereIn('teacher_id',$teacher_arr)->get();
+        $added_teachers = array();
+        $teachers_all   = array();
         foreach( $teachers as $teacher ){
-          $teacher->exams_number = $teachers_data->where('teacher_id',$teacher->id)->count();
-          $teachers_all[] = $teacher;
+          if(in_array($teacher->id, $added_teachers))
+            continue;
+          $teacher->exams_number = $teachers->where('id',(int)$teacher->id)->count();
+          $teachers_all[]        = $teacher;
+          $added_teachers[]      = $teacher->id;
         }
         }
+
         return Helper::return([
             'exams'   => $model_data,
             'teachers' => (count($teachers) > 1)? $teachers_all : $teachers 
-        ]);      
+        ]);   
        }catch(Exception $e){
           if($e instanceof ValidationException) {
              throw $e;
@@ -261,7 +265,7 @@ class studentController extends Controller
     public function get_notifications_count(Request $req)
     {try{
         $student_id      = $req->get('id');
-
+        
         $where = array(
           'student_id'  => $student_id,
           'status'      => 'ON'
@@ -270,7 +274,7 @@ class studentController extends Controller
         $subscrptions_arr = array();
         foreach($subscrptions as $subscrption){
           if(!in_array($subscrption->teacher_id, $subscrptions_arr))
-            $subscrptions_arr[] = (int)$subscrption->teacher_id;
+            $subscrptions_arr[] = $subscrption->teacher_id;
         }
 
         $where = array(
@@ -435,56 +439,6 @@ class studentController extends Controller
          return Helper::returnError(Helper::returnException($e));
         }
     }
-    public function get_teachers_unsubscribed(Request $req)
-    {try{
-        $student_id      = $req->get('id');
-
-        $where = array(
-          'subscrptions.student_id'  => $student_id
-        );
-        $subscribed = Subscrption::where($where)->join('temp_students','temp_students.id','subscrptions.temp_id')->select('subscrptions.teacher_id')->distinct()->get();
-        $subscribed_arr = array();
-        foreach($subscribed as $subscribe){
-          $subscribed_arr[] = $subscribe->teacher_id;
-        }
-        $teachers = User::where('type','T')->whereNotIn('id',$subscribed_arr)->get(['id','first_name','last_name','accept_register']);
-        return Helper::return([
-          'teachers'    => $teachers
-        ]);   
-       }catch(Exception $e){
-          if($e instanceof ValidationException) {
-             throw $e;
-          }
-         return Helper::returnError(Helper::returnException($e));
-        }
-    }
-    public function get_appointments(Request $req)
-    {try{
-        $teacher_id      = (int)$req->get('teacher_id');
-
-        $student_id      = $req->get('id');
-        $year            = $req->get('year');
-
-        $where = array(
-            'appointments.teacher_id' => $teacher_id,
-            'appointments.year'       => $year,
-        );
-
-        $model = new Appointment();
-        $model_select  = $model->where($where);
-        $select = ['appointments.id','days.day as days','appointments.time_from','appointments.time_to','appointments.status'];
-        $model_data    = $model_select->join('days','appointments.days_id','days.id')->select($select)->get();
-            
-        return Helper::return([
-            'appointments'   => $model_data
-        ]);     
-       }catch(Exception $e){
-          if($e instanceof ValidationException) {
-             throw $e;
-          }
-         return Helper::returnError(Helper::returnException($e));
-        }
-    }
     /*------------------------------------------------------------*/
     public function start_exam(Request $req)
     {try{
@@ -533,7 +487,6 @@ class studentController extends Controller
           'solves.*.images.*'    => 'nullable|image|mimes:jpeg,png,jpg|max:2000',
 
         ]);
-
         $request_id = (int)$req->input('request_id');
         $solves = $req->all('solves')['solves'];
         $exam_request = ExamRequest::where('id',$request_id);
@@ -562,9 +515,8 @@ class studentController extends Controller
         else if($solves_arr == 'question_not_found')
           return Helper::returnError(Lang::get('messages.question_not_found'));
         $startTime     = Carbon::parse($exam_request_data->start_at);
-        $endTime       = ($now > $exam_request_data->end_at)? Carbon::parse($exam_request_data->end_at) : Carbon::parse($now);
+        $endTime       = Carbon::parse(date('Y-m-d H:i:s'));
         $totalDuration =  $startTime->diff($endTime)->format('%H:%I:%S');
-
         Solve::insert($solves_arr['solves_arr']);
         $exam_request->update(['status' => 'COMPLETED','duration_solve' => $totalDuration , 'total_degree' => $solves_arr['total_degree'] ]);
         User::where('id',$student_id)->update(['student_status' => 'WAITING']);
@@ -659,62 +611,6 @@ class studentController extends Controller
         return Helper::return([
           'url'   => $url
         ]);   
-       }catch(Exception $e){
-          if($e instanceof ValidationException) {
-             throw $e;
-          }
-         return Helper::returnError(Helper::returnException($e));
-        }
-    }
-    public function subscribe(Request $req)
-    {try{
-        $student_id         = $req->get('id');
-        $req->validate([
-          'teacher_id'        => "required|numeric|exists:users,id,type,T",
-          'appointment_id'    => "required|numeric|exists:appointments,id",
-        ]);
-        $teacher_id     = (int)$req->input('teacher_id');
-        $appointment_id = (int)$req->input('appointment_id');
-        $year           = (int)$req->get('year');
-
-        $where = array(
-          'teacher_id'   => $teacher_id,
-          'student_id'   => $student_id,
-        );
-        $chk_subscribe = TempStudent::where($where)->count();
-        if($chk_subscribe > 0)
-          return Helper::returnError(Lang::get('messages.student_subscribed'));
-
-        $where = array(
-            'id'           => $appointment_id,
-            'teacher_id'   => $teacher_id,
-            'year'         => $year,
-        );
-
-        $accept_register = User::where('id',$teacher_id)->first()->accept_register;
-        if($accept_register == false)
-            return Helper::returnError(Lang::get('messages.closed_teacher'));
-        $chk_appointment = Appointment::where($where)->first();
-        if(!$chk_appointment)
-            return Helper::returnError(Lang::get('messages.invalid_appointment'));
-        if($chk_appointment->status == 'OFF')
-            return Helper::returnError(Lang::get('messages.closed_appointment'));
-
-        $my_arr['teacher_id']     = $teacher_id;
-        $my_arr['appointment_id'] = $appointment_id;
-        $my_arr['student_id']     = $student_id;
-        $my_arr['year']           = $year;
-        $my_arr['first_name']     = $req->get('first_name');
-        $my_arr['last_name']      = $req->get('last_name');
-        $my_arr['mobile']         = $req->get('mobile');
-        $my_arr['parent_mobile1'] = $req->get('parent_mobile1');
-        $my_arr['parent_mobile2'] = $req->get('parent_mobile2');
-        $my_arr['process']        = 'subscrption';
-        $my_arr['type']           = 'S';
-
-        $model = new TempStudent($my_arr);
-        $model->save();
-        return Helper::return([]);   
        }catch(Exception $e){
           if($e instanceof ValidationException) {
              throw $e;

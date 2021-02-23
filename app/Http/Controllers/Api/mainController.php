@@ -9,8 +9,6 @@ use App\Models\User;
 use App\Models\Appointment;
 use App\Models\Setting;
 use App\Models\TempStudent;
-use App\Models\Subscrption;
-use App\Models\ExamRequest;
 use App\Models\Day;
  
 use App\Helper;
@@ -20,30 +18,6 @@ class mainController extends Controller
 {
     public function connection(Request $req)
     {try{
-        // $teacher_id   = 2;
-        // $where = array(
-        //     'status'     => 'OFF',
-        //     'teacher_id' => $teacher_id,
-        //     'type'       => 'register'
-        // );
-        // $subscrptions = Subscrption::where($where)->get();
-        // $subscrptions_arr  = array();
-        // $users_arr         = array();
-        // $temp_students_arr = array();
-        // foreach($subscrptions as $subscrption){
-        //     $subscrptions_arr[]   = $subscrption->id;
-        //     $users_arr[]          = $subscrption->student_id;
-        //     $temp_students_arr[]  = $subscrption->temp_id;
-        // }
-        // if(count($subscrptions_arr) != count($users_arr) || count($subscrptions_arr) != count($temp_students_arr))
-        //     return Helper::returnError('Error In Counts');
-        
-        // Subscrption::whereIn('id',$subscrptions_arr)->delete();
-        // TempStudent::whereIn('id',$temp_students_arr)->delete();
-        // User::whereIn('id',$users_arr)->delete();
-        // User::where('id',$teacher_id)->increment('students_number',-count($subscrptions_arr));
-        // return Helper::return([]);
-        
         $header_key = Setting::where('key','HEADER_KEY')->first()->value;
         $oath_key   = Setting::where('key','OATH_KEY')->first()->value;
         return Helper::return([
@@ -137,9 +111,9 @@ class mainController extends Controller
             return Helper::returnError(Lang::get('auth.failed'));
             }
 
-            $token    = Helper::loginUsingId($model_select,$model_data->remember_token);
+            /*$token    =*/ Helper::loginUsingId($model_select,$model_data->remember_token);
         return Helper::return([
-            'access_token'   => $token,
+            'access_token'   => $model_data->remember_token,//$token,
             'type'           => $model_data->type,
             'first_name'     => $model_data->first_name,
             'last_name'      => $model_data->last_name,

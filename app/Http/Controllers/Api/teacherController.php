@@ -347,8 +347,7 @@ class teacherController extends Controller
 
         $where = array(
           'exam_requests.exam_id' => $exam_id,
-          'subscrptions.teacher_id' => $teacher_id,
-          'subscrptions.status' => 'ON',
+          'subscrptions.teacher_id' => $teacher_id
         );
         if($appointment_id)
           $where[] = ['appointments.id',$appointment_id];
@@ -381,20 +380,16 @@ class teacherController extends Controller
 
         $where = array(
           'exam_requests.exam_id'   => $exam_id,
-          'subscrptions.teacher_id' => $teacher_id,
-          'subscrptions.status'     => 'ON',
         );
         if($appointment_id)
           $where[] = ['appointments.id',$appointment_id];
 
         $statistics_select = $model::where($where);
-        $statistics_select->join('subscrptions','exam_requests.student_id','subscrptions.student_id');
         if($appointment_id){
-          $statistics_select->join('appointments','subscrptions.appointment_id','appointments.id');
-          $statistics_select->where('appointments.id',$appointment_id);
+          $statistics_select->where('subscrptions.teacher_id',$teacher_id);
+          $statistics_select->join('subscrptions','exam_requests.student_id','subscrptions.student_id')->join('appointments','subscrptions.appointment_id','appointments.id')->select(['exam_requests.is_corrected','exam_requests.is_seen','exam_requests.status']);
         }
-        $statistics_select->select(['exam_requests.is_corrected','exam_requests.is_seen','exam_requests.status']);
-
+        
         $statistics = $statistics_select->get();
         return Helper::return([
             'completed'         => $statistics->where('is_corrected',1)->count(),
@@ -458,34 +453,6 @@ class teacherController extends Controller
          return Helper::returnError(Helper::returnException($e));
         }
     }
-    public function get_student_exams(Request $req)
-    {try{
-        $teacher_id      = $req->get('id');
-
-        $student_id      = (int)$req->get('student_id');
-        $paginate        = (int)$req->get('paginate');
-
-        $model = new ExamRequest();
-        $where = array(
-          'exam_requests.teacher_id'   => $teacher_id,
-          'exam_requests.student_id'   => $student_id,
-          'exam_requests.is_corrected' => 1,
-        );
-        $select = array('exam_requests.id','exam_requests.status','exam_requests.duration_solve','exam_requests.total_degree','exams.exam_name','exams.degree','exams.duration','exam_requests.start_at');
-        $model_select = $model::where($where);
-        $model_data   = $model_select->join('exams','exams.id','exam_requests.exam_id')->select($select)->orderBy('exam_requests.created_at','DESC')->paginate($paginate);     
-        
-        return Helper::return([
-          'exams'  => $model_data
-        ]);   
-       }catch(Exception $e){
-          if($e instanceof ValidationException) {
-             throw $e;
-          }
-         return Helper::returnError(Helper::returnException($e));
-        }
-    }
-    
 /*------------------------------------------------------------*/
     public function change_accept_register(Request $req)
     {try{
@@ -608,7 +575,7 @@ class teacherController extends Controller
         $ids = $req->input('students');
         $where = array(
           'teacher_id' => $teacher_id,
-          // 'type'       => 'register'
+          'type'       => 'register'
         );
         $valid_ids = Subscrption::where($where)->whereIn('temp_id',$ids)->count();
         if($valid_ids != 0)
@@ -621,41 +588,23 @@ class teacherController extends Controller
         if($students_number > $students_limit)
             return Helper::returnError(Lang::get('messages.package_limit'));
 
-        $temp_students_data = $temp_students->get(['id','appointment_id','student_id','year','first_name','last_name','email','password','mobile','parent_mobile1','parent_mobile2','type','process']);
-
+        $temp_students_data = $temp_students->get(['id','appointment_id','year','first_name','last_name','email','password','mobile','parent_mobile1','parent_mobile2','type']);
         $subscrptions = array();
-        $notifications = array();
         $counter = 0;
         foreach($temp_students_data as $item){
-          if($item->process == 'register'){
-          $User = new User($item->makeHidden(['id','appointment_id','student_id','process'])->toArray());
+          $User = new User($item->makeHidden(['id','appointment_id'])->toArray());
           $User->save();
-          $student_id = $User->id;
-          }
-          else{
-            $student_id = (int)$item->student_id;
-            $notify = new Notification();
-            $notify->sender_id    = $teacher_id;
-            $notify->reciever_id  = $student_id;
-            $notify->event        = 'ASR';
-            $notify->is_seen      = 0;
-            $notify->seen_at      = NULL;
-            $notify->created_at   = date('Y-m-d H:i:s');
-            $notifications[] = $notify->toArray();
-          }
           $subscrptions[] = [
             'teacher_id'     => $teacher_id,
-            'student_id'     => $student_id,
+            'student_id'     => $User->id,
             'appointment_id' => $item->appointment_id,
             'temp_id'        => $item->id,
-            'type'           => $item->process,
+            'type'           => 'register',
             'created_at'     => date('Y-m-d H:i:s'),
           ];
           $counter++;
         }
         Subscrption::insert($subscrptions);
-        if(count($notifications) > 0)
-          Notification::insert($notifications);
         $temp_students->update([
           'status'  => 'OFF'
         ]);
