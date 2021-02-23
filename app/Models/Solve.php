@@ -15,5 +15,15 @@ class Solve extends Eloquent
     ];
 
     public $timestamps = false;
+
+    public function getGetImagesAttribute()
+    {
+      $images = NULL;
+      foreach($this->images as $image) {
+        $file = "storage/solves/{$image}";
+        $images[] = asset($file) ; 
+      }
+      return $images;
+    }
 }
 

@@ -12,4 +12,10 @@ class User extends Model
     protected $hidden = [
         'password'
       ];  
+
+    public function getGetImageAttribute()
+    {
+      $file = "storage/profiles/{$this->image}";
+      return file_exists(public_path($file)) && $this->image ? asset($file) : asset("default.jpg") ; 
+    }
 }

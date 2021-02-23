@@ -23,6 +23,9 @@ use Hash;
 
 class studentController extends Controller
 {
+    protected $userStorage = 'storage/profiles';
+
+
     public function get_profile(Request $req)
     {try{
         $student_id      = $req->get('id');
@@ -30,7 +33,8 @@ class studentController extends Controller
         $model       = new User();
         $model_select  = $model->where('id',$student_id);
         $model_data    = $model_select->first(['first_name','last_name','mobile','image']);
-        $model_data->image_url = env('APP_URL');
+        $model_data->image = $model_data->getImage;
+
         return Helper::return([
             'profile'   => $model_data
         ]);   
@@ -67,6 +71,13 @@ class studentController extends Controller
         if($teacher_id)
           $model_select->where('exam_requests.teacher_id',$teacher_id);//$where[] = ['exam_requests.teacher_id',$teacher_id]; 
         $model_data    = $model_select->join('users','exam_requests.teacher_id','users.id')->join('subscrptions','exam_requests.teacher_id','subscrptions.teacher_id')->join('exams','exam_requests.exam_id','exams.id')->select($select)->orderBy('exam_requests.created_at','DESC')->paginate($paginate);
+
+        $model_data->getCollection()->transform(function($item) {
+          $file = "{$this->userStorage}/{$item->image}";
+          $file = file_exists(public_path($file)) && $item->image ? asset($file) : asset("default.jpg") ;
+          $item->image = $file;
+          return $item;
+        });
 
         // $where = array(
         //   'subscrptions.student_id'  => $student_id,
@@ -170,6 +181,13 @@ class studentController extends Controller
         $model       = new ExamRequest();
         $model_select  = $model->where($where);  
         $model_data    = $model_select->join('users','exam_requests.teacher_id','users.id')->join('subscrptions','exam_requests.teacher_id','subscrptions.teacher_id')->join('exams','exam_requests.exam_id','exams.id')->select($select)->orderBy('exam_requests.created_at','DESC')->paginate($paginate);
+
+        $model_data->getCollection()->transform(function($item) {
+          $file = "{$this->userStorage}/{$item->image}";
+          $file = file_exists(public_path($file)) && $item->image ? asset($file) : asset("default.jpg") ;
+          $item->image = $file;
+          return $item;
+        }); 
         
         $where = array(
           'subscrptions.student_id'  => $student_id,
@@ -243,7 +261,7 @@ class studentController extends Controller
           $map['responds']        = $value['responds'];
           $map['degree']          = $value['degree'];
           $map['student_respond'] = $solve->respond;
-          $map['student_images']  = $solve->images;
+          $map['student_images']  = $solve->getImages;
           $map['student_degree']  = $solve->degree;
           $map['outside_counter'] = $value['outside_counter'];
           $map['inside_counter']  = $value['inside_counter'];
@@ -334,7 +352,7 @@ class studentController extends Controller
         $notifications_old = $notifications_seen->transform(function ($value) use ($senders_data){
           $sender = $senders_data->where('id',(int)$value['sender_id'])->first();
 
-          $map['image']       = $sender->image;
+          $map['image']       = $sender->getImage;
           $map['first_name']  = $sender->first_name;
           $map['last_name']   = $sender->last_name;
           $map['event']       = $value['event'];
@@ -415,10 +433,13 @@ class studentController extends Controller
           }
           else if($value['type'] == 'year')
             $target = $value['target'];
+
+          $file = "{$this->userStorage}/{$teacher->image}";
+          $file = file_exists(public_path($file)) && $teacher->image ? asset($file) : asset("default.jpg") ;
             
           $map['id']          = $value['_id'];
           $map['fullname']    = $teacher->first_name .' '. $teacher->last_name;
-          $map['image']       = $teacher->image;
+          $map['image']       = $file;
           $map['type']        = $value['type'];
           $map['target']      = $target;
           $map['message']     = $value['message'];
@@ -432,6 +453,57 @@ class studentController extends Controller
           'per_page'    => $model_data->perPage(),
           'messages'    => $model_collection
         ]);   
+       }catch(Exception $e){
+          if($e instanceof ValidationException) {
+             throw $e;
+          }
+         return Helper::returnError(Helper::returnException($e));
+        }
+    }
+
+    public function get_teachers_unsubscribed(Request $req)
+    {try{
+        $student_id      = $req->get('id');
+
+        $where = array(
+          'subscrptions.student_id'  => $student_id
+        );
+        $subscribed = Subscrption::where($where)->join('temp_students','temp_students.id','subscrptions.temp_id')->select('subscrptions.teacher_id')->distinct()->get();
+        $subscribed_arr = array();
+        foreach($subscribed as $subscribe){
+          $subscribed_arr[] = $subscribe->teacher_id;
+        }
+        $teachers = User::where('type','T')->whereNotIn('id',$subscribed_arr)->get(['id','first_name','last_name','accept_register']);
+        return Helper::return([
+          'teachers'    => $teachers
+        ]);   
+       }catch(Exception $e){
+          if($e instanceof ValidationException) {
+             throw $e;
+          }
+         return Helper::returnError(Helper::returnException($e));
+        }
+    }
+    public function get_appointments(Request $req)
+    {try{
+        $teacher_id      = (int)$req->get('teacher_id');
+
+        $student_id      = $req->get('id');
+        $year            = $req->get('year');
+
+        $where = array(
+            'appointments.teacher_id' => $teacher_id,
+            'appointments.year'       => $year,
+        );
+
+        $model = new Appointment();
+        $model_select  = $model->where($where);
+        $select = ['appointments.id','days.day as days','appointments.time_from','appointments.time_to','appointments.status'];
+        $model_data    = $model_select->join('days','appointments.days_id','days.id')->select($select)->get();
+            
+        return Helper::return([
+            'appointments'   => $model_data
+        ]);     
        }catch(Exception $e){
           if($e instanceof ValidationException) {
              throw $e;
@@ -477,6 +549,7 @@ class studentController extends Controller
     }
     public function end_solve_exam(Request $req)
     {try{
+        $now    = date('Y-m-d H:i:s');
         $student_id      = $req->get('id');
         $req->validate([
           'request_id'   => "required|numeric|exists:exam_requests,id,student_id,{$student_id}",
@@ -495,7 +568,6 @@ class studentController extends Controller
           return Helper::returnError(Lang::get('messages.not_in_exam'));
         // Check Layout For Long Requests
         $delay_time = 5; // In minutes
-        $now    = date('Y-m-d H:i:s');
         $layout = round((strtotime($now) - strtotime(  $exam_request_data->end_at  )) / 60,2);
         if($layout > $delay_time){
           $exam_request->update(['status' => 'DICONNECTED']);
@@ -515,7 +587,8 @@ class studentController extends Controller
         else if($solves_arr == 'question_not_found')
           return Helper::returnError(Lang::get('messages.question_not_found'));
         $startTime     = Carbon::parse($exam_request_data->start_at);
-        $endTime       = Carbon::parse(date('Y-m-d H:i:s'));
+        $endTime       = Carbon::parse($now);
+
         $totalDuration =  $startTime->diff($endTime)->format('%H:%I:%S');
         Solve::insert($solves_arr['solves_arr']);
         $exam_request->update(['status' => 'COMPLETED','duration_solve' => $totalDuration , 'total_degree' => $solves_arr['total_degree'] ]);
@@ -605,11 +678,11 @@ class studentController extends Controller
         $url   = Helper::image($image,'add','profiles',NULL,$student_id);
 
         $model->update(['image' => $url]);
-        if($student_image){
-          Helper::delete_image('profiles',$student_image);
-        }
+        
+        Helper::delete_image($this->userStorage,$student_image);
+        
         return Helper::return([
-          'url'   => $url
+          'url'   => asset("{$this->userStorage}/{$url}")
         ]);   
        }catch(Exception $e){
           if($e instanceof ValidationException) {

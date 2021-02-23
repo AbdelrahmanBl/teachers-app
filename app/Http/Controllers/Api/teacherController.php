@@ -25,14 +25,19 @@ use Hash;
 class teacherController extends Controller
 {
     protected $responds_sequence = '#S$S#';
+    protected $userStorage = 'storage/profiles';
+
+
+
     public function get_profile(Request $req)
     {try{
         $teacher_id      = $req->get('id');
 
         $model = new User();
         $model_select  = $model->where('id',$teacher_id);
-        $model_data    = $model_select->first(['first_name','last_name','mobile','image','accept_register']);
-            
+        $model_data    = $model_select->first(['first_name','last_name','image','mobile','accept_register']);
+        $model_data->image = $model_data->getImage;
+
         return Helper::return([
             'profile'   => $model_data
         ]);   
@@ -284,7 +289,7 @@ class teacherController extends Controller
           $map['responds']        = $value['responds'];
           $map['degree']          = $value['degree'];
           $map['student_respond'] = $solve->respond;
-          $map['student_images']  = $solve->images;
+          $map['student_images']  = $solve->getImages;
           $map['student_degree']  = $solve->degree;
           $map['outside_counter'] = $value['outside_counter'];
           $map['inside_counter']  = $value['inside_counter'];
@@ -429,10 +434,13 @@ class teacherController extends Controller
           }
           else if($value['type'] == 'year')
             $target = $value['target'];
+
+          $file = "{$this->userStorage}/{$req->get('image')}";
+          $file = file_exists(public_path($file)) && $req->get('image') ? asset($file) : asset("default.jpg") ;
             
           $map['id']          = $value['_id'];
           $map['fullname']    = $req->get('first_name') .' '. $req->get('last_name');
-          $map['image']       = $req->get('image');
+          $map['image']       = $file;
           $map['type']        = $value['type'];
           $map['target']      = $target;
           $map['message']     = $value['message'];
@@ -445,6 +453,34 @@ class teacherController extends Controller
           'current_page'=> $model_data->currentPage(),
           'per_page'    => $model_data->perPage(),
           'messages'    => $model_collection
+        ]);   
+       }catch(Exception $e){
+          if($e instanceof ValidationException) {
+             throw $e;
+          }
+         return Helper::returnError(Helper::returnException($e));
+        }
+    }
+
+    public function get_student_exams(Request $req)
+    {try{
+        $teacher_id      = $req->get('id');
+
+        $student_id      = (int)$req->get('student_id');
+        $paginate        = (int)$req->get('paginate');
+
+        $model = new ExamRequest();
+        $where = array(
+          'exam_requests.teacher_id'   => $teacher_id,
+          'exam_requests.student_id'   => $student_id,
+          'exam_requests.is_corrected' => 1,
+        );
+        $select = array('exam_requests.id','exam_requests.status','exam_requests.duration_solve','exam_requests.total_degree','exams.exam_name','exams.degree','exams.duration','exam_requests.start_at');
+        $model_select = $model::where($where);
+        $model_data   = $model_select->join('exams','exams.id','exam_requests.exam_id')->select($select)->orderBy('exam_requests.created_at','DESC')->paginate($paginate);     
+        
+        return Helper::return([
+          'exams'  => $model_data
         ]);   
        }catch(Exception $e){
           if($e instanceof ValidationException) {
@@ -551,11 +587,11 @@ class teacherController extends Controller
         $url   = Helper::image($image,'add','profiles',NULL,$teacher_id);
 
         $model->update(['image' => $url]);
-        if($teacher_image){
-          Helper::delete_image('profiles',$teacher_image);
-        }
+
+        Helper::delete_image($this->userStorage,$teacher_image);
+
         return Helper::return([
-          'url'   => $url
+          'url'   => asset("{$this->userStorage}/{$url}")
         ]);   
        }catch(Exception $e){
           if($e instanceof ValidationException) {
@@ -1037,7 +1073,7 @@ class teacherController extends Controller
         
         $url = Helper::image($image,'add',"questions/{$teacher_id}",NULL,$teacher_id);
         return Helper::return([
-          'url' => $url
+          'url' => asset("storage/questions/{$teacher_id}/{$url}")
         ]);   
        }catch(Exception $e){
           if($e instanceof ValidationException) {

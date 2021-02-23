@@ -60,11 +60,12 @@ class Helper extends Model
         }
         else 
         $imageName =  (time() . $counter . $person_id) .'.'.$image->getClientOriginalExtension();
-        // $destinationPath = 'delievery/main_icons';
-        $url = $destinationPath . '/' . $imageName;
+        $destinationPath = 'storage/' . $destinationPath;
+        // $url = $destinationPath . '/' . $imageName; 
 
         $image->move($destinationPath, $imageName);
-        $access_url =  env('APP_URL').'/' . $url;
+        // $access_url =  /* env('APP_URL').'/' . */ $url;
+        $access_url = $imageName;
         return $access_url;
     }
     public static function copy_image($filepath,$destinationPath,$counter = 0,$person_id = 0)
@@ -79,13 +80,13 @@ class Helper extends Model
         File::copy($oldPath , $newPath);
         return $url;
     }
-    public static function delete_image($destinationPath,$filepath)
+    public static function delete_image($destinationPath,$fileName)
     {
-        $oldImageName = explode('/',$filepath);
-        $oldImageName = $oldImageName[count($oldImageName)-1];
-        $imageName    =  $oldImageName;
-        
-        $image_path = $destinationPath . '/' . $imageName;  
+        // $oldImageName = explode('/',$filepath);
+        // $oldImageName = $oldImageName[count($oldImageName)-1];
+        // $imageName    =  $oldImageName;
+
+        $image_path = $destinationPath . '/' . $fileName;  
 
         if(File::exists($image_path)) {
             File::delete($image_path);
@@ -152,7 +153,7 @@ class Helper extends Model
             foreach( $solves[$counter]['images'] as $index => $image ){
                 if(!filesize($image) || $counter_skip > 2)
                   continue;
-                $images[] = Helper::image($image,'add',"solves/{$teacher_id}",NULL,$student_id,$counter.($counter_skip - 1)/*$counter = $index*/);
+                $images[] = "{$teacher_id}/" . Helper::image($image,'add',"solves/{$teacher_id}",NULL,$student_id,$counter.($counter_skip - 1)/*$counter = $index*/);
                 $counter_skip++;
             }
           }

@@ -117,7 +117,7 @@ class mainController extends Controller
             'type'           => $model_data->type,
             'first_name'     => $model_data->first_name,
             'last_name'      => $model_data->last_name,
-            'image'          => $model_data->image,
+            'image'          => $model_data->getImage,
             'mobile'         => $model_data->mobile,
             'parent_mobile1' => $model_data->parent_mobile1,
             'parent_mobile2' => $model_data->parent_mobile2,
