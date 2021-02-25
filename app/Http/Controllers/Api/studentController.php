@@ -364,7 +364,7 @@ class studentController extends Controller
         $notifications_new_collection = $notifications_not_seen_data->transform(function ($value) use ($senders_data){
           $sender = $senders_data->where('id',(int)$value['sender_id'])->first();
 
-          $map['image']       = $sender->image;
+          $map['image']       = $sender->getImage;
           $map['first_name']  = $sender->first_name;
           $map['last_name']   = $sender->last_name;
           $map['event']       = $value['event'];
@@ -549,7 +549,7 @@ class studentController extends Controller
     }
     public function end_solve_exam(Request $req)
     {try{
-        $now    = date('Y-m-d H:i:s');
+        $now    = $req->input('solve_time');//date('Y-m-d H:i:s');
         $student_id      = $req->get('id');
         $req->validate([
           'request_id'   => "required|numeric|exists:exam_requests,id,student_id,{$student_id}",

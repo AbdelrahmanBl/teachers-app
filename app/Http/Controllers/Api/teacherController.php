@@ -792,7 +792,7 @@ class teacherController extends Controller
         $req->validate([
           'year'            => 'required|in:1,2,3',
           'exam_name'       => 'required|string|max:100',
-          'duration'        => 'required|numeric|between:1,360',
+          'duration'        => 'required|numeric|between:1,999',
           'desc'            => 'nullable|string|max:100', 
         ]); 
         $package_id     = $req->get('package_id');
@@ -1233,7 +1233,7 @@ class teacherController extends Controller
           'id'              => "required|exists:exams,id,teacher_id,{$teacher_id}",
           'year'            => 'required|in:1,2,3',
           'exam_name'       => 'required|string|max:100',
-          'duration'        => 'required|numeric|between:1,360',
+          'duration'        => 'required|numeric|between:1,999',
           'desc'            => 'nullable|string|max:100', 
         ]);
         $id = $req->input('id');

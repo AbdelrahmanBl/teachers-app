@@ -13,12 +13,17 @@ use validate;
 use Hash;
 class adminController extends Controller
 {
+   protected $package_storage = 'storage/packages'; 
 	public function get_packages(Request $req)
     {try{
         $admin_id      = $req->get('id');
 
         $model       = new Package();
         $model_data  = $model::get();
+        $model_data->transform(function($package) {
+         $package['image'] = $package->getImage;
+         return $package;
+        });
 
         return Helper::return([
             'packages'    => $model_data
@@ -42,17 +47,17 @@ class adminController extends Controller
         $model_select    = $model_select->join('packages','packages.id','users.package_id')->select($select)->paginate($pagination);
 
         $model_data = $model_select->transform(function ($map){
-        	$map['solves_storage'] = Helper::directory_size("solves/{$map['id']}");
-        	$map['images_storage'] = Helper::directory_size("questions/{$map['id']}");
+        	$map['solves_storage'] = Helper::directory_size("storage/solves/{$map['id']}");
+        	$map['images_storage'] = Helper::directory_size("storage/questions/{$map['id']}");
 
         	return $map;
         });
 
         return Helper::return([
         	'total'       => $model_select->total(),
-	        'current_page'=> $model_select->currentPage(),
-	        'per_page'    => $model_select->perPage(),
-            'teachers'    => $model_data
+	      'current_page'=> $model_select->currentPage(),
+	      'per_page'    => $model_select->perPage(),
+         'teachers'    => $model_data
         ]);   
        }catch(Exception $e){
           if($e instanceof ValidationException) {
@@ -289,11 +294,10 @@ class adminController extends Controller
         $url           = Helper::image($image,'add','packages');
 
         $model->update(['image' => $url]);
-        if($package_image){
-          Helper::delete_image('packages',$package_image);
-        }
-        return Helper::return([
-          'url'   => $url
+        Helper::delete_image($this->package_storage,$package_image);
+        
+         return Helper::return([
+          'url'   => asset("{$this->package_storage}/{$url}")
         ]);     
        }catch(Exception $e){
           if($e instanceof ValidationException) {

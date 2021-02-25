@@ -18,7 +18,7 @@ class Solve extends Eloquent
 
     public function getGetImagesAttribute()
     {
-      $images = NULL;
+      $images = [];
       foreach($this->images as $image) {
         $file = "storage/solves/{$image}";
         $images[] = asset($file) ; 
