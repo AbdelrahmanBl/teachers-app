@@ -21,7 +21,12 @@ class Subscrptions extends Migration
             $table->integer('appointment_id');
             $table->integer('temp_id')->nullable();
 
-            $table->enum('type',['register','subscrption']);
+            $table->integer('attend_no')->default(0);
+            $table->integer('missed_no')->default(0);
+            $table->integer('missed_sequence')->default(0);
+            $table->double('student_rate',5,1)->nullable();
+
+            // $table->enum('type',['register','subscrption']);
             $table->enum('status',['ON','OFF'])->default('ON');
             
             $table->timestamps();
@@ -35,6 +40,6 @@ class Subscrptions extends Migration
      */
     public function down()
     {
-        DB::unprepared('DROP Table `subscrptions`');
+        Schema::dropIfExists('subscrptions');
     }
 }

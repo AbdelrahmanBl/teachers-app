@@ -110,10 +110,10 @@ class mainController extends Controller
             $model_select->increment('failed_try');
             return Helper::returnError(Lang::get('auth.failed'));
             }
-
-            /*$token    =*/ Helper::loginUsingId($model_select,$model_data->remember_token);
+ 
+            $token    = Helper::loginUsingId($model_select,$model_data->remember_token);
         return Helper::return([
-            'access_token'   => $model_data->remember_token,//$token,
+            'access_token'   => $token,//$model_data->remember_token,
             'type'           => $model_data->type,
             'first_name'     => $model_data->first_name,
             'last_name'      => $model_data->last_name,
@@ -140,7 +140,7 @@ class mainController extends Controller
             'appointment_id'        => "required|numeric|exists:appointments,id",
             'first_name'            => 'required|string|max:15',
             'last_name'             => 'required|string|max:40',
-            'email'                 => 'required|email|max:64|unique:users|unique:temp_students',
+            'email'                 => 'required|email|max:64|unique:users',
             'password'              => 'required|string|min:6|max:16',
             'verify_password'       => 'required|string|same:password',
             'mobile'                => 'required|string|max:11',
@@ -166,9 +166,17 @@ class mainController extends Controller
         if($chk_appointment->status == 'OFF')
             return Helper::returnError(Lang::get('messages.closed_appointment'));
 
-
-        $my_arr = $req->all(['teacher_id','appointment_id','year','first_name','last_name','email','mobile','parent_mobile1','parent_mobile2']);
+        $my_arr = $req->all(['year','first_name','last_name','email','mobile','parent_mobile1','parent_mobile2']);
         $my_arr['password'] = Hash::make($req->input('password'));
+        $my_arr['type']     = 'S';
+        $my_arr['student_status'] = 'WAITING';
+
+        $model = new User($my_arr);
+        $model->save();
+        
+        $my_arr = $req->all(['teacher_id','appointment_id']);
+        $my_arr['student_id'] = $model->id;
+
         $model = new TempStudent($my_arr);
         $model->save();
         return Helper::return([]);   

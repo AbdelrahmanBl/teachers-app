@@ -5,6 +5,8 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Setting;
 use App\Models\Solve;
+use App\Models\ExamRequest;
+use App\Models\Subscrption;
 
 use File;
 
@@ -176,6 +178,28 @@ class Helper extends Model
           $counter++;
         }
         return ['solves_arr' => $solves_arr , 'total_degree' => $total_degree];
+    }
+
+    public static function getStudentsForPublish($req,$exam_id,$appointment_ids,$year)
+    {
+      $teacher_id       = $req->get('id');
+
+      $model = ExamRequest::where('exam_id',$exam_id)->get(['student_id']);
+      $student_ids = $model->pluck('student_id');
+      
+      $model = Subscrption::whereNotIn('student_id',$student_ids)->whereIn('subscrptions.appointment_id',$appointment_ids);
+      $where = array(
+        'subscrptions.teacher_id'   => $teacher_id,
+        'subscrptions.status'       => 'ON',
+        // 'users.type'                => 'S',
+        'users.year'                => $year
+      );
+
+      $model_select  = $model->where($where);
+      $select = ['users.id','users.first_name','users.last_name','subscrptions.appointment_id'];
+      $model_data    = $model_select->join('users','users.id','subscrptions.student_id')->select($select)->get();
+
+      return $model_data;
     }
     
 }

@@ -82,6 +82,9 @@ Route::group(['middleware' => 'TeacherAuth'], function () {
 	Route::post('/teacher/send_message','Api\teacherController@send_message');
 	Route::post('/teacher/update_message','Api\teacherController@update_message');
 	Route::post('/teacher/delete_message','Api\teacherController@delete_message');
+	/*------------------------------------------------------------*/
+	Route::resource('/teacher/attendance', 'Api\attendanceController');
+	Route::post('/teacher/attend_students', 'Api\attendanceController@attend_students');
 });
 /*----------------------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------------------*/

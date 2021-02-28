@@ -41,6 +41,6 @@ class Exams extends Migration
      */
     public function down()
     {
-        DB::unprepared('DROP Table `exams`');
+        Schema::dropIfExists('exams');
     }
 }

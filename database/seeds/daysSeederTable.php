@@ -22,6 +22,9 @@ class daysSeederTable extends Seeder
             ],
             [
                 'day'   => 'الاثنين و الخميس',
+            ],
+            [
+                'day'   => 'السبت دبل',
             ]
         ]);
     }

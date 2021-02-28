@@ -77,7 +77,7 @@ return [
         'array' => 'The :attribute must not have more than :value items',
     ],
     'max' => [
-        'numeric' => 'The :attribute may not be greater than :max',
+        'numeric' => ' العنصر :attribute  يجب أن لا يزيد عن :max',
         'file' => ':attribute يجب أن تكون أقل من :max كيلو بايت',
         'string' => ' العنصر :attribute  يجب ألا يتخطي ال:max حرف',
         'array' => 'العنصر :attribute يجب أن يكون أقل من :max',
@@ -85,7 +85,7 @@ return [
     'mimes' => ':attribute يجب أن يكون من النوع :values',
     'mimetypes' => 'The :attribute must be a file of type: :values',
     'min' => [
-        'numeric' => 'The :attribute must be at least :min',
+        'numeric' => ' العنصر :attribute  يجب أن لا يقل عن :min',
         'file' => 'The :attribute must be at least :min kilobytes',
         'string' => ' العنصر :attribute  يجب أن يزيد عن :min حرف',
         'array' => 'The :attribute must have at least :min items',
@@ -196,7 +196,8 @@ return [
         'message' => 'الرسالة',
         'year_id' => 'السنة الدراسية',
         'group_id' => 'المجموعة',
-
+        'class_no' => 'رقم الحصة',
+        'month' => 'الشهر',
     ],
 
 ];

@@ -61,7 +61,7 @@ class teacherController extends Controller
           $where[] = ['appointments.year',$year];
         $model = new Appointment();
         $model_select  = $model->where($where);
-        $select = ['appointments.id','days.day as days','appointments.time_from','appointments.time_to','appointments.year','appointments.status'];
+        $select = ['appointments.id','days.day as days','appointments.time_from','appointments.time_to','appointments.year','appointments.status','appointments.max_class_no'];
         $model_data    = $model_select->join('days','appointments.days_id','days.id')->select($select)->orderBy('appointments.id','DESC')->paginate($pagination);
             
         $statistics = $model::where('teacher_id',$teacher_id)->get();
@@ -81,9 +81,10 @@ class teacherController extends Controller
     }
     public function get_filter_appointments(Request $req)
     {try{
-
+ 
         $teacher_id      = $req->get('id');
         $year            = (int)$req->get('year');
+        $exam_id         = (int)$req->get('exam_id');
 
         $where = array(
           'teacher_id' => $teacher_id,
@@ -91,11 +92,20 @@ class teacherController extends Controller
         );
         $model = new Appointment();
         $model_select  = $model->where($where);
-        $select = ['appointments.id','days.day as days','appointments.time_from'];
+        $select = ['appointments.id','days.day as days','appointments.time_from','appointments.max_class_no','appointments.current_class_no'];
         $model_data    = $model_select->join('days','appointments.days_id','days.id')->select($select)->get();
             
         if(count($model_data) == 0)
           return Helper::returnError(Lang::get('messages.no_appointments'));
+
+        if($exam_id) {
+          $students_data = Helper::getStudentsForPublish($req,$exam_id,$model_data->pluck('id'),$year); 
+          $model_data->transform(function($appointment) use ($students_data){
+            $appointment->count_published = $students_data->where('appointment_id',$appointment->id)->count();
+            return $appointment->makeHidden(['max_class_no','current_class_no']);
+          });
+        }
+
         return Helper::return([
             'appointments'   => $model_data
         ]);   
@@ -124,9 +134,13 @@ class teacherController extends Controller
         if($appointment_id)
           $model_select->where('appointments.id',$appointment_id);
         
-        $select = ['users.id','users.first_name','users.last_name','users.mobile','users.parent_mobile1','users.parent_mobile2','days.day as days','appointments.time_from','appointments.time_to','appointments.year','subscrptions.status','users.created_at'];
+        $select = ['users.id','users.first_name','users.last_name','users.mobile','users.parent_mobile1','users.parent_mobile2','days.day as days','appointments.time_from','appointments.time_to','appointments.year','subscrptions.student_rate','subscrptions.status','users.created_at'];
         $model_data    = $model_select->join('users','users.id','subscrptions.student_id')->join('appointments','appointments.id','subscrptions.appointment_id')->orderBy('users.id','DESC')->join('days','appointments.days_id','days.id')->select($select)->paginate($pagination);
-  
+        $model_data->getCollection()->transform(function($item) {
+          $item->fullname = "{$item['first_name']} {$item['last_name']}";
+          return $item->makeHidden(['first_name','last_name']);
+        });
+
         if($appointment_id)
           $where[]   = ['subscrptions.appointment_id',$appointment_id]; 
         $statistics  = $model::where($where)->join('users','users.id','subscrptions.student_id')->get();
@@ -152,27 +166,45 @@ class teacherController extends Controller
         $appointment_id = (int)$req->get('appointment_id');
 
         $model = new TempStudent();
-        $where = array(
-          'temp_students.teacher_id'   => $teacher_id,
-          'temp_students.status'       => 'ON'
-        );
+        $where = [
+          ['teacher_id',$teacher_id],
+          ['status','ON']
+        ];
         $model_select  = $model->where($where);
         if($year)
-          $model_select->where('appointments.year',$year);
+          $model_select->whereHas('appointment',function($q) use ($year){
+            $q->where('year',$year);
+          });
         if($appointment_id)
-          $model_select->where('appointments.id',$appointment_id);
+          $model_select->whereHas('appointment',function($q) use ($appointment_id){
+            $q->where('id',$appointment_id);
+          });
 
-        $select = ['temp_students.id','temp_students.first_name','temp_students.last_name','temp_students.mobile','temp_students.parent_mobile1','temp_students.parent_mobile2','days.day as days','appointments.time_from','appointments.time_to','appointments.year'];
-        $model_data    = $model_select->join('appointments','appointments.id','temp_students.appointment_id')->join('days','appointments.days_id','days.id')->orderBy('temp_students.id','DESC')->select($select)->paginate($pagination);
+        $model_data = $model_select->orderBy('id','DESC')->paginate($pagination);
+        $model_data->getCollection()->transform(function($temp) {
+          $temp->fullname       = $temp->student->fullname;
+          $temp->mobile         = $temp->student->mobile;
+          $temp->parent_mobile1 = $temp->student->parent_mobile1;
+          $temp->time_from      = $temp->appointment->time_from;
+          $temp->time_to        = $temp->appointment->time_to;
+          $temp->year           = $temp->appointment->year;
+          $temp->days           = $temp->appointment->day->day;
+
+          return $temp->makeHidden(['student_id','appointment_id','teacher_id','status','updated_at','student','appointment']);
+        });
+        
+        // $select = ['temp_students.id','temp_students.first_name','temp_students.last_name','temp_students.mobile','temp_students.parent_mobile1','temp_students.parent_mobile2','days.day as days','appointments.time_from','appointments.time_to','appointments.year'];
+        // $model_data    = $model_select->join('appointments','appointments.id','temp_students.appointment_id')->join('days','appointments.days_id','days.id')->orderBy('temp_students.id','DESC')->select($select)->paginate($pagination);
   
         if($appointment_id)
-          $where[]   = ['temp_students.appointment_id',$appointment_id]; 
+          $where[]   = ['appointment_id',$appointment_id]; 
         $statistics  = $model::where($where)->get();
+
         return Helper::return([
             'all'        => $statistics->count(),
-            'first'      => $statistics->where('year',1)->count(),
-            'second'     => $statistics->where('year',2)->count(),
-            'third'      => $statistics->where('year',3)->count(),
+            'first'      => $statistics->where('appointment.year',1)->count(),
+            'second'     => $statistics->where('appointment.year',2)->count(),
+            'third'      => $statistics->where('appointment.year',3)->count(),
             'students'   => $model_data
         ]);   
        }catch(Exception $e){
@@ -198,23 +230,7 @@ class teacherController extends Controller
         if($exam->year != $year)
           return Helper::returnError(Lang::get('messages.invalid_exam_year'));
 
-        $model = ExamRequest::where('exam_id',$exam_id)->get(['student_id']);
-        $student_ids = array();
-        foreach($model as $student){
-          $student_ids[] = $student->student_id;
-        }
-
-        $model = Subscrption::whereNotIn('student_id',$student_ids)->whereIn('subscrptions.appointment_id',$appointment_ids);
-        $where = array(
-          'subscrptions.teacher_id'   => $teacher_id,
-          'subscrptions.status'       => 'ON',
-          'users.type'                => 'S',
-          'users.year'                => $year
-        );
-
-        $model_select  = $model->where($where);
-        $select = ['users.id','users.first_name','users.last_name'];
-        $model_data    = $model_select->join('users','users.id','subscrptions.student_id')->select($select)->get();
+        $model_data = Helper::getStudentsForPublish($req,$exam_id,$appointment_ids,$year); 
         
         if(count($model_data) == 0)
           return Helper::returnError(Lang::get('messages.no_published_students')); 
@@ -237,7 +253,7 @@ class teacherController extends Controller
         $exam_id = (int)$req->get('exam_id');
 
         $model       = Exam::where('id',$exam_id);
-        $model_data  = $model->first(['exam_name','degree','duration','is_published','year','status','desc','is_rtl','created_at']);
+        $model_data  = $model->first(['id','exam_name','degree','duration','is_published','year','status','desc','is_rtl','created_at']);
 
         $question_model = Question::where('exam_id',$exam_id);
         $question_data  = $question_model->get(['_id','image','question_type','main_question','question','true_respond','responds','outside_counter','inside_counter','degree','created_at']);
@@ -611,7 +627,7 @@ class teacherController extends Controller
         $ids = $req->input('students');
         $where = array(
           'teacher_id' => $teacher_id,
-          'type'       => 'register'
+          // 'type'       => 'register'
         );
         $valid_ids = Subscrption::where($where)->whereIn('temp_id',$ids)->count();
         if($valid_ids != 0)
@@ -623,24 +639,35 @@ class teacherController extends Controller
         $students_number = $req->get('students_number') + $temp_students->count();
         if($students_number > $students_limit)
             return Helper::returnError(Lang::get('messages.package_limit'));
+            
+        $temp_students_data = $temp_students->get();
 
-        $temp_students_data = $temp_students->get(['id','appointment_id','year','first_name','last_name','email','password','mobile','parent_mobile1','parent_mobile2','type']);
         $subscrptions = array();
+        $notifications = array();
         $counter = 0;
         foreach($temp_students_data as $item){
-          $User = new User($item->makeHidden(['id','appointment_id'])->toArray());
-          $User->save();
-          $subscrptions[] = [
+            $student_id = (int)$item->student_id;
+            $notify = new Notification();
+            $notify->sender_id    = $teacher_id;
+            $notify->reciever_id  = $student_id;
+            $notify->event        = 'ASR';
+            $notify->is_seen      = 0;
+            $notify->seen_at      = NULL;
+            $notify->created_at   = date('Y-m-d H:i:s');
+            $notifications[] = $notify->toArray();
+
+            $subscrptions[] = [
             'teacher_id'     => $teacher_id,
-            'student_id'     => $User->id,
+            'student_id'     => $student_id,
             'appointment_id' => $item->appointment_id,
             'temp_id'        => $item->id,
-            'type'           => 'register',
             'created_at'     => date('Y-m-d H:i:s'),
           ];
           $counter++;
         }
         Subscrption::insert($subscrptions);
+        if(count($notifications) > 0)
+          Notification::insert($notifications);
         $temp_students->update([
           'status'  => 'OFF'
         ]);
@@ -662,12 +689,14 @@ class teacherController extends Controller
           'time_from'   => 'required|date_format:H:i',
           'time_to'     => 'required|date_format:H:i|after:time_from',
           'year'        => 'required|in:1,2,3',
+          'max_class_no'=> 'required|numeric',
         ]);
-        $package_id = $req->get('package_id');
-        $days       = $req->input('days');
-        $time_from  = $req->input('time_from');
-        $time_to    = $req->input('time_to');
-        $year       = $req->input('year');
+        $package_id    = $req->get('package_id');
+        $days          = $req->input('days');
+        $time_from     = $req->input('time_from');
+        $time_to       = $req->input('time_to');
+        $year          = $req->input('year');
+        $max_class_no  = $req->input('max_class_no');
 
         $model = new Appointment();
         $count = $req->get('appointments_number');
@@ -691,6 +720,7 @@ class teacherController extends Controller
         $model->time_to        = $time_to;   
         $model->year           = $year;      
         $model->teacher_id     = $teacher_id; 
+        $model->max_class_no   = $max_class_no; 
 
         $model->save();
         User::where('id',$teacher_id)->increment('appointments_number');
@@ -713,12 +743,14 @@ class teacherController extends Controller
           'time_from'   => 'required|date_format:H:i',
           'time_to'     => 'required|date_format:H:i|after:time_from',
           'year'        => 'required|in:1,2,3',
+          'max_class_no'=> 'required|numeric',
         ]);
-        $id         = $req->input('id');
-        $days       = $req->input('days');
-        $time_from  = $req->input('time_from');
-        $time_to    = $req->input('time_to');
-        $year       = $req->input('year');
+        $id              = $req->input('id');
+        $days            = $req->input('days');
+        $time_from       = $req->input('time_from');
+        $time_to         = $req->input('time_to');
+        $year            = $req->input('year');
+        $max_class_no    = $req->input('max_class_no');
         
         $appointments = Subscrption::where('appointment_id',$id)->limit(1)->count();
         if($appointments > 0)
@@ -728,7 +760,7 @@ class teacherController extends Controller
           'id' => $id,
         );
         $model_select = $model::where($where);
-        $my_arr = $req->all(['time_from','time_to','year']);
+        $my_arr = $req->all(['time_from','time_to','year','max_class_no']);
         $my_arr['days_id'] = $days;
         $model_select->update($my_arr);
         
@@ -897,15 +929,16 @@ class teacherController extends Controller
           'teacher_id'  => $teacher_id,
           'status'      => 'ON'
         );
-        $subscrptions = Subscrption::whereIn('student_id',$id)->where($where)->get(['student_id']);
+        $subscrptions = Subscrption::whereIn('student_id',$id)->where($where)->get(['id','student_id']);
         $arr = array();
         $notifications = array();
         foreach($subscrptions as $subscrption){
           $Helper = new Helper();
-          $Helper->exam_id    =  (int)$exam_id;
-          $Helper->student_id =  (int)$subscrption->student_id;
-          $Helper->teacher_id =  (int)$teacher_id;
-          $Helper->created_at =  date('Y-m-d H:i:s');
+          $Helper->exam_id        = (int)$exam_id;
+          $Helper->student_id     = (int)$subscrption->student_id;
+          $Helper->teacher_id     = (int)$teacher_id;
+          $Helper->subscrption_id = (int)$subscrption->id;
+          $Helper->created_at     = date('Y-m-d H:i:s');
           $arr[] = $Helper->toArray();
           $notify = new Notification();
           $notify->sender_id    = (int)$teacher_id;
@@ -1346,6 +1379,8 @@ class teacherController extends Controller
         $marks        = $req->input('marks');
         $solve        = new Solve();
         $exam_request = ExamRequest::where('id',$request_id);
+        $exam_request_data = $exam_request->first();
+        $subscrption  = Subscrption::where(['student_id' => $exam_request_data->student_id ,'teacher_id' => $exam_request_data->teacher_id ]);
 
         $question_ids = array();
         foreach( $marks as $mark ){
@@ -1355,6 +1390,7 @@ class teacherController extends Controller
         $solves       = Solve::whereIn('question_id',$question_ids)->get();
 
         $total_degree = 0;
+        // $total_exam_degree = 0;
         foreach( $marks as $mark ){
           $question = $questions->where('_id',$mark['question_id'])->first();
           if($question->question_type != 'W')
@@ -1366,18 +1402,23 @@ class teacherController extends Controller
           $solve_item_data = $solve_item->first();
           if($solve_item_data->degree != NULL){
             $new_degree = (double)$mark['degree'] - $solve_item_data->degree;
-            $solve::where('_id',$mark['id'])->increment('degree',$new_degree);
+            if($new_degree != 0)
+              $solve::where('_id',$mark['id'])->increment('degree',$new_degree);
           }
           else{ 
             $new_degree    = (double)$mark['degree'];
             $solve::where('_id',$mark['id'])->update(['degree' => $new_degree]);
           }
 
-          $total_degree += $new_degree;
+          $total_degree      += $new_degree;
+          // $total_exam_degree += (double)$question->degree;
         }
 
         $exam_request->increment('total_degree',$total_degree);
         $exam_request->update(['is_seen' => 1]);
+        // $subscrption->increment('student_degree',$total_degree);
+        // if($exam_request_data->is_seen == 0)
+        //   $subscrption->increment('exams_degree',$total_exam_degree);
 
         return Helper::return([
           'new_degree'  => $total_degree
@@ -1400,8 +1441,12 @@ class teacherController extends Controller
         
         $exam_request = ExamRequest::whereIn('id',$request_ids);
         $exam_request_data = $exam_request->get();
+
         $notifications = array();
         foreach($exam_request_data as $request){
+          if($request->is_corrected == 1)
+            continue;
+
           $notify = new Notification();
           $notify->sender_id    = (int)$teacher_id;
           $notify->reciever_id  = (int)$request->student_id;
@@ -1410,9 +1455,19 @@ class teacherController extends Controller
           $notify->seen_at      = NULL;
           $notify->created_at   = date('Y-m-d H:i:s');
           $notifications[] = $notify->toArray();
+
+          $subscrption  = $request->subscrption;
+          $student_rate = $request->total_degree / $request->exam->degree;
+          if($subscrption->student_rate != NULL) {
+            $student_rate = (($student_rate * 100) + $subscrption->student_rate) / 200;
+          }
+          $student_rate *= 100;
+          $subscrption->student_rate = $student_rate;
+          $subscrption->save();
         }
-        
+
         $exam_request->update(['is_corrected' => 1]);
+        if($notifications)
         Notification::insert($notifications);
         return Helper::return([]);   
        }catch(Exception $e){

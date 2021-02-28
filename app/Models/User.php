@@ -11,7 +11,12 @@ class User extends Model
     ];
     protected $hidden = [
         'password'
-      ];  
+      ]; 
+      
+    public function getFullnameAttribute()
+    {
+      return "{$this->first_name} {$this->last_name}";
+    }
 
     public function getGetImageAttribute()
     {

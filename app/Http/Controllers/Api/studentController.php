@@ -14,6 +14,7 @@ use App\Models\Subscrption;
 use App\Models\Notification;
 use App\Models\Message;
 use App\Models\Appointment;
+use App\Models\TempStudent;
 
 use App\Helper;
 use validate;
@@ -460,7 +461,7 @@ class studentController extends Controller
          return Helper::returnError(Helper::returnException($e));
         }
     }
-
+ 
     public function get_teachers_unsubscribed(Request $req)
     {try{
         $student_id      = $req->get('id');
@@ -684,6 +685,62 @@ class studentController extends Controller
         return Helper::return([
           'url'   => asset("{$this->userStorage}/{$url}")
         ]);   
+       }catch(Exception $e){
+          if($e instanceof ValidationException) {
+             throw $e;
+          }
+         return Helper::returnError(Helper::returnException($e));
+        }
+    }
+    public function subscribe(Request $req)
+    {try{
+        $student_id         = $req->get('id');
+        $req->validate([
+          'teacher_id'        => "required|numeric|exists:users,id,type,T",
+          'appointment_id'    => "required|numeric|exists:appointments,id",
+        ]);
+        $teacher_id     = (int)$req->input('teacher_id');
+        $appointment_id = (int)$req->input('appointment_id');
+        $year           = (int)$req->get('year');
+
+        $where = array(
+          'teacher_id'   => $teacher_id,
+          'student_id'   => $student_id,
+        );
+        $chk_subscribe = TempStudent::where($where)->count();
+        if($chk_subscribe > 0)
+          return Helper::returnError(Lang::get('messages.student_subscribed'));
+
+        $where = array(
+            'id'           => $appointment_id,
+            'teacher_id'   => $teacher_id,
+            'year'         => $year,
+        );
+
+        $accept_register = User::where('id',$teacher_id)->first()->accept_register;
+        if($accept_register == false)
+            return Helper::returnError(Lang::get('messages.closed_teacher'));
+        $chk_appointment = Appointment::where($where)->first();
+        if(!$chk_appointment)
+            return Helper::returnError(Lang::get('messages.invalid_appointment'));
+        if($chk_appointment->status == 'OFF')
+            return Helper::returnError(Lang::get('messages.closed_appointment'));
+
+        $my_arr['teacher_id']     = $teacher_id;
+        $my_arr['appointment_id'] = $appointment_id;
+        $my_arr['student_id']     = $student_id;
+        $my_arr['year']           = $year;
+        $my_arr['first_name']     = $req->get('first_name');
+        $my_arr['last_name']      = $req->get('last_name');
+        $my_arr['mobile']         = $req->get('mobile');
+        $my_arr['parent_mobile1'] = $req->get('parent_mobile1');
+        $my_arr['parent_mobile2'] = $req->get('parent_mobile2');
+        $my_arr['process']        = 'subscrption';
+        $my_arr['type']           = 'S';
+
+        $model = new TempStudent($my_arr);
+        $model->save();
+        return Helper::return([]);   
        }catch(Exception $e){
           if($e instanceof ValidationException) {
              throw $e;
