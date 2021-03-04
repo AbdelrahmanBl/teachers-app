@@ -58,6 +58,7 @@ Route::group(['middleware' => 'TeacherAuth'], function () {
 	Route::post('/teacher/update_profile','Api\teacherController@update_profile');
 	Route::post('/teacher/update_profile_image','Api\teacherController@update_profile_image');
 	Route::post('/teacher/accept_students','Api\teacherController@accept_students');
+	Route::post('/teacher/change_student_appointment','Api\teacherController@change_student_appointment');
 	Route::post('/teacher/delete_register','Api\teacherController@delete_register');
 	Route::post('/teacher/close_student','Api\teacherController@close_student');
 	Route::post('/teacher/add_exam','Api\teacherController@add_exam');
@@ -84,7 +85,10 @@ Route::group(['middleware' => 'TeacherAuth'], function () {
 	Route::post('/teacher/delete_message','Api\teacherController@delete_message');
 	/*------------------------------------------------------------*/
 	Route::resource('/teacher/attendance', 'Api\attendanceController');
+	Route::get('/teacher/student_statistics/{id}', 'Api\attendanceController@student_statistics');
 	Route::post('/teacher/attend_students', 'Api\attendanceController@attend_students');
+	Route::resource('/teacher/payment', 'Api\paymentController');
+	Route::post('/teacher/payment_students/{id}', 'Api\paymentController@payment_students');
 });
 /*----------------------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------------------*/

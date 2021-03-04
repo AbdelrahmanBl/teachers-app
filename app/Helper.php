@@ -7,6 +7,9 @@ use App\Models\Setting;
 use App\Models\Solve;
 use App\Models\ExamRequest;
 use App\Models\Subscrption;
+use App\Models\Attendance;
+
+use Jenssegers\Date\Date;
 
 use File;
 
@@ -200,6 +203,49 @@ class Helper extends Model
       $model_data    = $model_select->join('users','users.id','subscrptions.student_id')->select($select)->get();
 
       return $model_data;
+    }
+
+    public static function getStudentStatistics($student_id,$teacher_id)
+    {
+      $where = ['student_id' => $student_id , 'teacher_id' => $teacher_id];
+      $subscrption = Subscrption::where($where)->first();
+      if(!$subscrption)
+        return ['error' => 1];
+
+      $main = [$subscrption->attend_no,$subscrption->missed_no];
+      $attendances = Attendance::where($where)->orderBy('_id','DESC')->get(['month','status']);
+      // dd($attendances->toArray());
+
+      $attend  = [];
+      $missed  = [];
+      $months  = [];
+
+      foreach($attendances as $attendance) {
+        $month = $attendance->month;
+        if(!in_array($month,$months)) {
+          $months[] = $month;
+          $attend[] = 0;
+          $missed[] = 0;
+        }
+        $index = array_search($month,$months);
+        if($attendance->status == true)
+          $attend[$index]++;
+        else $missed[$index]++; 
+      }
+
+      Date::setLocale('ar');
+      $counter = 0;
+      foreach($months as $month) {
+        $months[$counter] = Date::create(0, $month + 1, 0, 0, 0, 0)->format('M');
+        $counter++;
+      }
+
+      return [
+        'main'     => $main,
+        'months'   => $months,
+        'attend'   => $attend,
+        'missed'   => $missed,
+      ];
     }
     
 }

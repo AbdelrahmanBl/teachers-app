@@ -15,6 +15,7 @@ class ExamRequests extends Migration
     {
         Schema::create('exam_requests', function (Blueprint $table) {
             $table->increments('id');
+            $table->integer('subscrption_id');
             $table->integer('exam_id');
             $table->integer('student_id');
             $table->integer('teacher_id');
@@ -25,8 +26,10 @@ class ExamRequests extends Migration
 
             $table->string('duration_solve',10)->nullable();
             $table->double('total_degree',5,1)->nullable();
+            
+            // $table->timestamp('publish_at');
             $table->timestamp('start_at')->nullable(); 
-            $table->timestamp('end_at')->nullable();    
+            $table->timestamp('end_at')->nullable();
             $table->timestamps();
         });
     }

@@ -134,7 +134,7 @@ class teacherController extends Controller
         if($appointment_id)
           $model_select->where('appointments.id',$appointment_id);
         
-        $select = ['users.id','users.first_name','users.last_name','users.mobile','users.parent_mobile1','users.parent_mobile2','days.day as days','appointments.time_from','appointments.time_to','appointments.year','subscrptions.student_rate','subscrptions.status','users.created_at'];
+        $select = ['users.id','users.first_name','users.last_name','users.mobile','users.parent_mobile1','users.parent_mobile2','days.day as days','appointments.id as appointment_id','appointments.time_from','appointments.time_to','appointments.year','subscrptions.student_rate','subscrptions.status','users.created_at'];
         $model_data    = $model_select->join('users','users.id','subscrptions.student_id')->join('appointments','appointments.id','subscrptions.appointment_id')->orderBy('users.id','DESC')->join('days','appointments.days_id','days.id')->select($select)->paginate($pagination);
         $model_data->getCollection()->transform(function($item) {
           $item->fullname = "{$item['first_name']} {$item['last_name']}";
@@ -902,9 +902,10 @@ class teacherController extends Controller
     {try{
         $teacher_id      = $req->get('id');
         $req->validate([
-          'students'  => "required|array",
-          'students.*'=> "required|exists:subscrptions,student_id,teacher_id,{$teacher_id}", 
-          'exam_id'   => "required|exists:exams,id,teacher_id,{$teacher_id}"       
+          'students'   => "required|array",
+          'students.*' => "required|exists:subscrptions,student_id,teacher_id,{$teacher_id}", 
+          'exam_id'    => "required|exists:exams,id,teacher_id,{$teacher_id}",
+          "publish_at" => "nullable|date_format:Y-m-d H:i:s"
         ]);
         $id      = $req->input('students');
         $exam_id = (int)$req->input('exam_id');
@@ -930,27 +931,29 @@ class teacherController extends Controller
           'status'      => 'ON'
         );
         $subscrptions = Subscrption::whereIn('student_id',$id)->where($where)->get(['id','student_id']);
-        $arr = array();
+        $exam_requests = array();
         $notifications = array();
+        $publish_at    = $req->input('publish_at');
+        $now           = date('Y-m-d H:i:s');
         foreach($subscrptions as $subscrption){
           $Helper = new Helper();
           $Helper->exam_id        = (int)$exam_id;
           $Helper->student_id     = (int)$subscrption->student_id;
           $Helper->teacher_id     = (int)$teacher_id;
           $Helper->subscrption_id = (int)$subscrption->id;
-          $Helper->created_at     = date('Y-m-d H:i:s');
-          $arr[] = $Helper->toArray();
+          $Helper->created_at     = $publish_at ?? $now; 
+          $exam_requests[] = $Helper->toArray();
           $notify = new Notification();
           $notify->sender_id    = (int)$teacher_id;
           $notify->reciever_id  = (int)$subscrption->student_id;
           $notify->event        = 'PE';
           $notify->is_seen      = 0;
           $notify->seen_at      = NULL;
-          $notify->created_at   = date('Y-m-d H:i:s');
+          $notify->created_at   = $publish_at ?? $now; 
           $notifications[] = $notify->toArray();
         }
         
-        ExamRequest::insert($arr);
+        ExamRequest::insert($exam_requests);
         Notification::insert($notifications);
         if($exam_data->is_published == 0)
         $exam->update([ 'is_published' => 1 ]);
@@ -1590,6 +1593,37 @@ class teacherController extends Controller
             'teacher_id'  => $teacher_id
         );
         Message::where($where)->delete();
+        return Helper::return([]);   
+       }catch(Exception $e){
+          if($e instanceof ValidationException) {
+             throw $e;
+          }
+         return Helper::returnError(Helper::returnException($e));
+      }
+    }
+
+    public function change_student_appointment(Request $req)
+    {
+      try{
+        $teacher_id      = $req->get('id');
+        $req->validate([
+          'id'             => "required|numeric",
+          'appointment_id' => "required|numeric|exists:appointments,id,teacher_id,{$teacher_id}"
+        ]);
+
+        $id               = (int)$req->input('id');
+        $appointment_id   = (int)$req->input('appointment_id');
+
+        $where = array(
+            'student_id'  => $id,
+            'teacher_id'  => $teacher_id
+        );
+        $subscrption = Subscrption::where($where);
+
+        $is_update = $subscrption->update(['appointment_id' => $appointment_id]);
+        if(!$is_update)
+          return Helper::returnError(__('messages.not_allowed'));
+
         return Helper::return([]);   
        }catch(Exception $e){
           if($e instanceof ValidationException) {

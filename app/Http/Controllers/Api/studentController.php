@@ -63,6 +63,7 @@ class studentController extends Controller
           'subscrptions.student_id'   => $student_id,
           'subscrptions.status'       => 'ON'
         );
+        $where[] = ['exam_requests.created_at','<=',date('Y-m-d H:i:s')];
         
 
         $select = ['exam_requests.id as request_id','exam_requests.created_at','exam_requests.teacher_id','users.image','users.first_name','users.last_name'
@@ -300,6 +301,7 @@ class studentController extends Controller
           'reciever_id'   => $student_id,
           'is_seen'       => 0
         );
+        $where[] = ['created_at','<=',date('Y-m-d H:i:s')];
       
         $new_count          = Notification::whereIn('sender_id',$subscrptions_arr)->where($where)->count(); 
 
@@ -332,6 +334,8 @@ class studentController extends Controller
         $where = array(
           'reciever_id'   => $student_id,
         );
+        $where[] = ['created_at','<=',date('Y-m-d H:i:s')];
+
         $notifications_seen = Notification::whereIn('sender_id',$subscrptions_arr)->where($where)->where('is_seen',1)->orderBy('created_at','DESC')->paginate(4);
         $notifications_not_seen  = Notification::whereIn('sender_id',$subscrptions_arr)->where($where)->where('is_seen',0)->limit($new_count);
         $notifications_not_seen_data = $notifications_not_seen->get();

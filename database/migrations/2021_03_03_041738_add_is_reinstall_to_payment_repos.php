@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddSubscrptionIdToExamRequests extends Migration
+class AddIsReinstallToPaymentRepos extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AddSubscrptionIdToExamRequests extends Migration
      */
     public function up()
     {
-        Schema::table('exam_requests', function (Blueprint $table) {
-            $table->integer('subscrption_id')->after('id');
+        Schema::table('payment_repos', function (Blueprint $table) {
+            $table->boolean('is_reinstall')->default(false)->after('is_install');
         });
     }
 
@@ -25,8 +25,8 @@ class AddSubscrptionIdToExamRequests extends Migration
      */
     public function down()
     {
-        Schema::table('exam_requests', function (Blueprint $table) {
-            $table->dropColumn('subscrption_id');
+        Schema::table('payment_repos', function (Blueprint $table) {
+            $table->dropColumn('is_reinstall');
         });
     }
 }

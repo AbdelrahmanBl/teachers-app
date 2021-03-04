@@ -20,6 +20,10 @@ class UpdateAttendNoTrigger extends Migration
                     SET NEW.missed_no       = OLD.missed_no        + (OLD.attend_no - NEW.attend_no);
                     SET NEW.missed_sequence = OLD.missed_sequence  + (OLD.attend_no - NEW.attend_no);
                 END IF;
+
+                IF NEW.missed_sequence < 0 THEN
+                    SET NEW.missed_sequence = 0;
+                END IF;
             END
         ');
     }

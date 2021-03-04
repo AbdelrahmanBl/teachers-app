@@ -14,6 +14,7 @@ use App\Models\Day;
 use App\Helper;
 use Hash;
 use validate;
+
 class mainController extends Controller
 {
     public function connection(Request $req)
