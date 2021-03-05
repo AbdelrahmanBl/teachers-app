@@ -41,6 +41,7 @@ Route::group(['middleware' => 'StudentAuthInExam'], function () {
 /*----------------------------------------------------------------------------------------*/
 Route::group(['middleware' => 'TeacherAuth'], function () {
 	Route::get('/teacher/get_profile','Api\teacherController@get_profile');
+	Route::get('/teacher/get_package','Api\teacherController@get_package');
 	Route::get('/teacher/get_appointments','Api\teacherController@get_appointments');
 	Route::get('/teacher/get_filter_appointments','Api\teacherController@get_filter_appointments');
 	Route::get('/teacher/get_students','Api\teacherController@get_students');

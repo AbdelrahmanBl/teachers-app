@@ -646,8 +646,9 @@ class studentController extends Controller
         $req->validate([
           'first_name'    => 'required|string|max:15',
           'last_name'     => 'required|string|max:40',
-          'email'         => "required|email|max:64|unique:users,email,{$student_id},id|unique:temp_students,email,{$temp_id},id",
+          'email'         => "required|email|max:64|unique:users,email,{$student_id},id",//|unique:temp_students,email,{$temp_id},id
           'mobile'        => 'required|string|max:11',
+          'parent_mobile1'  => 'required|string|max:11',
         ]);
         
 
@@ -656,7 +657,7 @@ class studentController extends Controller
           'id'   => $student_id,
         );
         $model = $model::where($where);
-        $model->update($req->all(['first_name','last_name','email','mobile']));
+        $model->update($req->all(['first_name','last_name','email','mobile','parent_mobile1']));
         
         return Helper::return([]);   
        }catch(Exception $e){

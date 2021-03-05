@@ -48,6 +48,25 @@ class teacherController extends Controller
          return Helper::returnError(Helper::returnException($e));
         }
     }
+    public function get_package(Request $req)
+    {
+      try{
+        $teacher_id      = $req->get('id');
+        $package_id      = $req->get('package_id');
+
+        $model_data = Package::find($package_id)->makeHidden(['id','created_at','updated_at','status','price']);
+        $model_data->image = $model_data->getImage;
+
+        return Helper::return([
+            'package'   => $model_data
+        ]);   
+       }catch(Exception $e){
+          if($e instanceof ValidationException) {
+             throw $e;
+          }
+         return Helper::returnError(Helper::returnException($e));
+        }
+    }
     public function get_appointments(Request $req)
     {try{
         $teacher_id      = $req->get('id');

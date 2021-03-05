@@ -121,7 +121,7 @@ class mainController extends Controller
             'image'          => $model_data->getImage,
             'mobile'         => $model_data->mobile,
             'parent_mobile1' => $model_data->parent_mobile1,
-            'parent_mobile2' => $model_data->parent_mobile2,
+            // 'parent_mobile2' => $model_data->parent_mobile2,
             'accept_register'=> $model_data->accept_register,
             'is_rtl'         => $model_data->is_rtl,
         ]);   
