@@ -209,7 +209,7 @@ class teacherController extends Controller
           $temp->year           = $temp->appointment->year;
           $temp->days           = $temp->appointment->day->day;
 
-          return $temp->makeHidden(['student_id','appointment_id','teacher_id','status','updated_at','student','appointment']);
+          return $temp->makeHidden(['appointment_id','teacher_id','status','updated_at','student','appointment']);
         });
         
         // $select = ['temp_students.id','temp_students.first_name','temp_students.last_name','temp_students.mobile','temp_students.parent_mobile1','temp_students.parent_mobile2','days.day as days','appointments.time_from','appointments.time_to','appointments.year'];
