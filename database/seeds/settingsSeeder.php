@@ -39,7 +39,7 @@ class settingsSeeder extends Seeder
             ],
             [
                 'key'   => 'students_no',
-                'value' => 100000
+                'value' => 3000
             ],
         ]);
     }
