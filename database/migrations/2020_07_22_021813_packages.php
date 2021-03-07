@@ -22,7 +22,7 @@ class Packages extends Migration
             $table->integer('students_limit');
             $table->integer('appointment_limit');
             $table->integer('exams_limit');
-            $table->double('price',15,3);
+            $table->double('price',15,0);
             
             $table->enum('status',['ON','OFF'])->default('ON');
             $table->timestamps();
