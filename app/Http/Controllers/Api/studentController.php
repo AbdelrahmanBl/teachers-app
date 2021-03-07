@@ -291,11 +291,11 @@ class studentController extends Controller
           'status'      => 'ON'
         );
         $subscrptions     = Subscrption::where($where)->get();
-        $subscrptions_arr = array();
-        foreach($subscrptions as $subscrption){
-          if(!in_array($subscrption->teacher_id, $subscrptions_arr))
-            $subscrptions_arr[] = (int)$subscrption->teacher_id;
-        }
+        $subscrptions_arr = $subscrptions->pluck('teacher_id');
+        // foreach($subscrptions as $subscrption){
+        //   if(!in_array($subscrption->teacher_id, $subscrptions_arr))
+        //     $subscrptions_arr[] = (int)$subscrption->teacher_id;
+        // }
 
         $where = array(
           'reciever_id'   => $student_id,
