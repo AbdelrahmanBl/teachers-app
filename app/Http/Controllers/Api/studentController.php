@@ -330,7 +330,7 @@ class studentController extends Controller
           if(!in_array($subscrption->teacher_id, $subscrptions_arr))
             $subscrptions_arr[] = (int)$subscrption->teacher_id;
         }
-
+ 
         $where = array(
           'reciever_id'   => $student_id,
         );
