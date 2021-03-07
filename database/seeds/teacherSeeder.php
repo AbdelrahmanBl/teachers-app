@@ -4,7 +4,7 @@ use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Setting;
 
-class userSeeder extends Seeder
+class teacherSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -13,8 +13,8 @@ class userSeeder extends Seeder
      */
     public function run()
     {
-        $type = 'S';
+        $type = 'T';
         User::where('type',$type)->delete();
-        factory( User::class , (int)Setting::where('key','students_no')->first()->value )->create(['type' => $type]);
+        factory( User::class , (int)Setting::where('key','teachers_no')->first()->value )->create(['type' => $type]);
     }
 }

@@ -28,7 +28,19 @@ class settingsSeeder extends Seeder
             [
                 'key'   => 'EXCEPTION',
                 'value' => 1
-            ]
+            ],
+            [
+                'key'   => 'teachers_no',
+                'value' => 3
+            ],
+            [
+                'key'   => 'appointments_rounds',
+                'value' => 3
+            ],
+            [
+                'key'   => 'students_no',
+                'value' => 1000
+            ],
         ]);
     }
 }
