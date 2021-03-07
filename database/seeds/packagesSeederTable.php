@@ -16,19 +16,27 @@ class packagesSeederTable extends Seeder
         Package::insert([
             [
 				'name'              => 'خطة الاسعار الصغرى',
-				'desc'              => 'تمكنك من إضافة 300 طالب و 50 موعد و 500 امتحان',
+				'desc'              => 'يتم دفع 30 ج رسوم الطالب',
                 'students_limit'    => 300,
 				'appointment_limit' => 50,
                 'exams_limit'       => 500,
-				'price'             => 1000,
+				'price'             => 9000,
             ],
             [
-                'name'              => 'خطة الاسعار الكبرى',
-                'desc'              => 'تمكنك من إضافة 600 طالب و 100 موعد و 1000 امتحان',
+				'name'              => 'خطة الاسعار الوسطي',
+				'desc'              => 'يتم دفع 30 ج رسوم الطالب',
                 'students_limit'    => 600,
 				'appointment_limit' => 100,
                 'exams_limit'       => 1000,
-				'price'             => 2000,
+				'price'             => 18000,
+            ],
+            [
+                'name'              => 'خطة الاسعار الكبرى',
+                'desc'              => 'يتم دفع 30 ج رسوم الطالب',
+                'students_limit'    => 900,
+				'appointment_limit' => 150,
+                'exams_limit'       => 1500,
+				'price'             => 27000,
             ]
         ]);
     }
