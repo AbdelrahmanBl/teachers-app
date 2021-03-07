@@ -586,7 +586,7 @@ class studentController extends Controller
         if(count($solves) != count($questions))
           return Helper::returnError(Lang::get('messages.wrong_questions_no'));
         
-        $solves_arr  = Helper::handle_solves($solves,$questions,$student_id,$exam_id,$exam_request_data->teacher_id);
+        $solves_arr  = Helper::handle_solves($solves,$questions,$student_id,$exam_id,(int)$exam_request_data->teacher_id);
         if($solves_arr == 'distinct_respond')
           return Helper::returnError(Lang::get('messages.distinct_respond'));
         else if($solves_arr == 'question_not_found')

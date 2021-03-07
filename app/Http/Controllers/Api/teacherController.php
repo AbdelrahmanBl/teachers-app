@@ -585,7 +585,7 @@ class teacherController extends Controller
         $req->validate([
           'first_name'    => 'required|string|max:15',
           'last_name'     => 'required|string|max:40',
-          'email'         => "required|email|max:64|unique:users,email,{$teacher_id},id|unique:temp_students",
+          'email'         => "required|email|max:64|unique:users,email,{$teacher_id},id",
           'mobile'        => 'nullable|string|max:11',
         ]);
         
