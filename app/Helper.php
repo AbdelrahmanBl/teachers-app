@@ -202,6 +202,11 @@ class Helper extends Model
       $model_select  = $model->where($where);
       $select = ['users.id','users.first_name','users.last_name','subscrptions.appointment_id'];
       $model_data    = $model_select->join('users','users.id','subscrptions.student_id')->select($select)->get();
+      $model_data->transform(function($item) {
+        $item->fullname = "{$item->first_name} {$item->last_name}";
+        return $item->makeHidden(['first_name','last_name']);
+      });
+
 
       return $model_data;
     }
