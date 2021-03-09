@@ -642,7 +642,7 @@ class studentController extends Controller
     public function update_profile(Request $req)
     {try{
         $student_id      = $req->get('id');
-        $temp_id         = Subscrption::where('student_id',$student_id)->first()->temp_id;
+        
         $req->validate([
           'first_name'    => 'required|string|max:15',
           'last_name'     => 'required|string|max:40',
