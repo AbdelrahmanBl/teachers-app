@@ -8,6 +8,7 @@ use App\Models\Solve;
 use App\Models\ExamRequest;
 use App\Models\Subscrption;
 use App\Models\Attendance;
+use App\Models\Notification;
 
 use Jenssegers\Date\Date;
 
@@ -246,6 +247,30 @@ class Helper extends Model
         'attend'   => $attend,
         'missed'   => $missed,
       ];
+    }
+
+    public static function getNotificationCount($user_id)
+    {
+      $where = array(
+        'student_id'  => $user_id,
+        'status'      => 'ON'
+      );
+      $subscrptions     = Subscrption::where($where)->get();
+      $subscrptions_arr = array();
+      foreach($subscrptions as $subscrption){
+        if(!in_array((int)$subscrption->teacher_id, $subscrptions_arr))
+          $subscrptions_arr[] = (int)$subscrption->teacher_id;
+      }
+
+      $where = array(
+        'reciever_id'   => $user_id,
+        'is_seen'       => 0
+      );
+      $where[] = ['created_at','<=',date('Y-m-d H:i:s')];
+    
+      $new_count          = Notification::whereIn('sender_id',$subscrptions_arr)->where($where)->count(); 
+
+      return $new_count;
     }
     
 }

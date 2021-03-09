@@ -12,13 +12,13 @@ use Illuminate\Http\Request;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-Route::group(['middleware' => 'MainAuth'], function () {
+Route::group(['middleware' => 'MainAuth'], function () { 
 /*----------------------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------------------*/
 Route::group(['middleware' => 'StudentAuth'], function () {
 	Route::get('/student/get_exam','Api\studentController@get_exam');
 	Route::get('/student/get_notifications','Api\studentController@get_notifications');
-	Route::get('/student/get_notifications_count','Api\studentController@get_notifications_count');
+	// Route::get('/student/get_notifications_count','Api\studentController@get_notifications_count');
 
 Route::group(['middleware' => 'StudentAuthInExam'], function () {
 	Route::get('/student/get_profile','Api\studentController@get_profile');

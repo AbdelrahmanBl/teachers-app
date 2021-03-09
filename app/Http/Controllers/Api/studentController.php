@@ -110,7 +110,10 @@ class studentController extends Controller
         }
         }
 
+        $notifications = Helper::getNotificationCount($student_id);
+
         return Helper::return([
+            'notifications' => $notifications,
             'exams'   => $model_data,
             'teachers' => (count($teachers) > 1)? $teachers_all : $teachers 
         ]);   
@@ -146,7 +149,10 @@ class studentController extends Controller
         $question_model = Question::where('exam_id',$exam_id);
         $question_data  = $question_model->get(['_id','image','question_type','main_question','question','responds','outside_counter','inside_counter','degree']);
 
+        $notifications = Helper::getNotificationCount($student_id);
+
         return Helper::return([
+            'notifications' => $notifications,
             'now'       => date('Y-m-d H:i:s'),
             'end_at'    => $exam_request_data->end_at,
             'exam'      => $exam_data,
@@ -215,7 +221,11 @@ class studentController extends Controller
           $teachers_all[] = $teacher;
         }
         }
+
+        $notifications = Helper::getNotificationCount($student_id);
+
         return Helper::return([
+            'notifications' => $notifications,
             'exams'   => $model_data,
             'teachers' => (count($teachers) > 1)? $teachers_all : $teachers 
         ]);   
@@ -270,7 +280,10 @@ class studentController extends Controller
           return $map;
         });
         
+        $notifications = Helper::getNotificationCount($student_id);
+
         return Helper::return([
+            'notifications' => $notifications,
             'exam_request_data' => $exam_request_data,
             'exam'              => $model_data,
             'exam_data'         => $question_data,
@@ -293,7 +306,7 @@ class studentController extends Controller
         $subscrptions     = Subscrption::where($where)->get();
         $subscrptions_arr = array();
         foreach($subscrptions as $subscrption){
-          if(!in_array($subscrption->teacher_id, $subscrptions_arr))
+          if(!in_array((int)$subscrption->teacher_id, $subscrptions_arr))
             $subscrptions_arr[] = (int)$subscrption->teacher_id;
         }
 
@@ -452,7 +465,11 @@ class studentController extends Controller
 
           return $map;
         });
+
+        $notifications = Helper::getNotificationCount($student_id);
+
         return Helper::return([
+          'notifications' => $notifications,
           'total'       => $model_data->total(),
           'current_page'=> $model_data->currentPage(),
           'per_page'    => $model_data->perPage(),
@@ -479,7 +496,11 @@ class studentController extends Controller
           $subscribed_arr[] = $subscribe->teacher_id;
         }
         $teachers = User::where('type','T')->whereNotIn('id',$subscribed_arr)->get(['id','first_name','last_name','accept_register']);
+        
+        $notifications = Helper::getNotificationCount($student_id);
+
         return Helper::return([
+          'notifications' => $notifications,
           'teachers'    => $teachers
         ]);   
        }catch(Exception $e){
