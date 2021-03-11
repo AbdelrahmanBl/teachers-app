@@ -9,6 +9,7 @@ use App\Models\ExamRequest;
 use App\Models\Subscrption;
 use App\Models\Attendance;
 use App\Models\Notification;
+use App\Models\Question;
 
 use Jenssegers\Date\Date;
 
@@ -276,6 +277,31 @@ class Helper extends Model
       $new_count          = Notification::whereIn('sender_id',$subscrptions_arr)->where($where)->count(); 
 
       return $new_count;
+    }
+
+    public static function merge_questions($exam_ids,$new_exam_id)
+    {
+      $questions = Question::whereIn('exam_id',$exam_ids)->get();
+      $counter      = 0; 
+      $total_degree = 0;
+      $arr = array();
+      foreach( $questions as $question ){
+        $question_copy = $question->replicate();
+        $question_copy->exam_id = $new_exam_id;
+        // $image = $question->image;
+        // if($image)
+        //   $question_copy->image = Helper::copy_image($image,'questions',$counter,$teacher_id);
+        
+        $arr[] = $question_copy->toArray();
+        $total_degree += (double)$question->degree;
+        $counter++;
+      } 
+      
+      return [
+        'length' => $counter,
+        'degree' => $total_degree,
+        'data'   => $arr
+      ]; 
     }
     
 }

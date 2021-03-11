@@ -64,6 +64,7 @@ Route::group(['middleware' => 'TeacherAuth'], function () {
 	Route::post('/teacher/close_student','Api\teacherController@close_student');
 	Route::post('/teacher/add_exam','Api\teacherController@add_exam');
 	Route::post('/teacher/copy_exam','Api\teacherController@copy_exam');
+	Route::post('/teacher/merge_exams','Api\teacherController@merge_exams');
 	Route::post('/teacher/publish_exam','Api\teacherController@publish_exam');
 	Route::post('/teacher/update_exam','Api\teacherController@update_exam');
 	Route::post('/teacher/delete_exam','Api\teacherController@delete_exam');

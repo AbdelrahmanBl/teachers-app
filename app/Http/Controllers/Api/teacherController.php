@@ -891,20 +891,10 @@ class teacherController extends Controller
         $model = new Exam($exam_copy->toArray());
         $model->save();
 
-        $questions = Question::where('exam_id',$exam_id)->get();
-        $counter = 0; 
-        $arr = array();
-        foreach( $questions as $question ){
-          $question_copy = $question->replicate();
-          $question_copy->exam_id = $model->id;
-          // $image = $question->image;
-          // if($image)
-          //   $question_copy->image = Helper::copy_image($image,'questions',$counter,$teacher_id);
-          $arr[] = $question_copy->toArray();
-          $counter++;
-        }
-        if($arr)
-        Question::insert($arr);
+        $arr = Helper::merge_questions([$exam_id],$model->id);
+
+        if($arr['length'] > 0)
+        Question::insert($arr['data']);
 
         User::where('id',$teacher_id)->increment('exams_number');
         return Helper::return([
@@ -1645,6 +1635,56 @@ class teacherController extends Controller
           return Helper::returnError(__('messages.not_allowed'));
 
         return Helper::return([]);   
+       }catch(Exception $e){
+          if($e instanceof ValidationException) {
+             throw $e;
+          }
+         return Helper::returnError(Helper::returnException($e));
+      }
+    }
+
+    public function merge_exams(Request $req)
+    {
+      try{
+        $teacher_id      = $req->get('id');
+        $req->validate([
+          'exam_id'         => "required|array",
+          'exam_id.*'       => "required|numeric|exists:exams,id,teacher_id,{$teacher_id}",
+          'year'            => 'required|in:1,2,3',
+          'exam_name'       => 'required|string|max:100',
+          'duration'        => 'required|numeric|between:1,999',
+          'desc'            => 'nullable|string|max:100', 
+        ]);
+
+        $exam_ids         = $req->input('exam_id');
+        
+        $package_id     = $req->get('package_id');
+        $exams_number   = $req->get('exams_number');
+        $exams_limit = Package::where('id',$package_id)->first()->exams_limit;
+        if($exams_number >= $exams_limit)
+          return Helper::returnError(Lang::get('messages.exams_limit'));
+        
+        $exam_copy =  $req->all(['year','exam_name','duration','desc']);
+        $exam_copy['teacher_id']   = $teacher_id;
+        $exam_copy['is_rtl']       = (bool)$req->get('is_rtl');
+        $new_exam = new Exam($exam_copy);
+        $new_exam->save();
+
+        $arr = Helper::merge_questions($exam_ids,$new_exam->id);
+
+        if($arr['length'] > 0) {
+          Question::insert($arr['data']);
+          Exam::where('id',$new_exam->id)->update([ 'degree' => $arr['degree'], 'question_no' => $arr['length'] ]);
+        }
+
+        User::where('id',$teacher_id)->increment('exams_number');
+        
+        return Helper::return([
+          'id'           => $new_exam->id,
+          'total_degree' => $arr['degree'],
+          'total_length' => $arr['length'],
+          'created_at'   => date('Y-m-d H:m:s', strtotime($new_exam->created_at))
+        ]);  
        }catch(Exception $e){
           if($e instanceof ValidationException) {
              throw $e;
