@@ -1669,8 +1669,14 @@ class teacherController extends Controller
         $exam_copy['is_rtl']       = (bool)$req->get('is_rtl');
         $new_exam = new Exam($exam_copy);
         $new_exam->save();
-
+ 
         $arr = Helper::merge_questions($exam_ids,$new_exam->id);
+
+        $questions_limit = Setting::where('key','questions_limit')->first()->value;
+        if($arr['length'] >= $questions_limit) {
+          $new_exam->delete();
+          return Helper::returnError(Lang::get('messages.max_questions').$questions_limit);
+        }
 
         if($arr['length'] > 0) {
           Question::insert($arr['data']);
