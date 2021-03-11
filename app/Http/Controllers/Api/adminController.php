@@ -72,14 +72,14 @@ class adminController extends Controller
         $admin_id      = $req->get('id');
 
         $req->validate([
-        	'package_id'    	=> 'required|numeric|exists:packages,id',
-        	'first_name'    	=> 'required|string|max:15',
-        	'last_name'     	=> 'required|string|max:40',
-        	'email'         	=> 'required|email|max:64|unique:users|unique:temp_students',
+        	'package_id'    	  => 'required|numeric|exists:packages,id',
+        	'first_name'    	  => 'required|string|max:15',
+        	'last_name'     	  => 'required|string|max:40',
+        	'email'         	  => 'required|email|max:64|unique:users',
         	'password'          => 'required|string|min:6|max:16',
-            'verify_password'   => 'required|string|same:password',
-            'is_rtl'            => 'required|bool',
-            'mobile'            => 'nullable|string|max:11',
+         'verify_password'   => 'required|string|same:password',
+         'is_rtl'            => 'required|bool',
+         'mobile'            => 'nullable|string|max:11',
         ]);
         $now    = date('Y-m-d H:i:s');
         $my_arr = $req->all(['package_id','first_name','last_name','email','is_rtl','mobile']);

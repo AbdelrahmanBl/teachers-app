@@ -856,13 +856,14 @@ class teacherController extends Controller
         $my_arr = $req->all(['year','exam_name','duration','desc']);
         $my_arr['teacher_id']       = (int)$teacher_id;
         $my_arr['is_rtl']           = (bool)$req->get('is_rtl');
+        $now = date('Y-m-d H:m:s');
         $model = new Exam($my_arr);
         $model->save();
 
         User::where('id',$teacher_id)->increment('exams_number');
         return Helper::return([
           'id' => $model->id,
-          'created_at' => date('Y-m-d H:m:s', strtotime($model->created_at))
+          'created_at' => $now
         ]);   
        }catch(Exception $e){
           if($e instanceof ValidationException) {
@@ -888,6 +889,7 @@ class teacherController extends Controller
         $exam_copy = $model->replicate();
         $exam_copy->is_published = 0;
         $exam_copy->status = "ON";
+        $now = date('Y-m-d H:m:s');
         $model = new Exam($exam_copy->toArray());
         $model->save();
 
@@ -899,7 +901,7 @@ class teacherController extends Controller
         User::where('id',$teacher_id)->increment('exams_number');
         return Helper::return([
           'id' => $model->id,
-          'created_at' => date('Y-m-d H:m:s', strtotime($model->created_at))
+          'created_at' => $now
         ]);   
        }catch(Exception $e){
           if($e instanceof ValidationException) {
@@ -995,7 +997,7 @@ class teacherController extends Controller
         if($model_data->is_published)
           return Helper::returnError(Lang::get('messages.published'));
         $questions_limit = Setting::where('key','questions_limit')->first()->value;
-        if($model_data->question_no >= $questions_limit)
+        if($model_data->question_no > $questions_limit)
           return Helper::returnError(Lang::get('messages.max_questions').$questions_limit);
         $responds         = $req->input('responds');
         $true_respond     = (int)$req->input('true_respond');
@@ -1043,7 +1045,7 @@ class teacherController extends Controller
         if($model_data->is_published)
           return Helper::returnError(Lang::get('messages.published'));
         $questions_limit = Setting::where('key','questions_limit')->first()->value;
-        if($model_data->question_no >= $questions_limit)
+        if($model_data->question_no > $questions_limit)
           return Helper::returnError(Lang::get('messages.max_questions').$questions_limit);
           
         $degree           =  (double)$req->input('degree');
@@ -1646,6 +1648,7 @@ class teacherController extends Controller
     public function merge_exams(Request $req)
     {
       try{
+        return Question::whereIn('exam_id',$req->input('exam_id'))->delete();
         $teacher_id      = $req->get('id');
         $req->validate([
           'exam_id'         => "required|array",
@@ -1667,13 +1670,15 @@ class teacherController extends Controller
         $exam_copy =  $req->all(['year','exam_name','duration','desc']);
         $exam_copy['teacher_id']   = $teacher_id;
         $exam_copy['is_rtl']       = (bool)$req->get('is_rtl');
+        $now = date('Y-m-d H:m:s');
         $new_exam = new Exam($exam_copy);
         $new_exam->save();
+        
  
         $arr = Helper::merge_questions($exam_ids,$new_exam->id);
 
         $questions_limit = Setting::where('key','questions_limit')->first()->value;
-        if($arr['length'] >= $questions_limit) {
+        if($arr['length'] > $questions_limit) {
           $new_exam->delete();
           return Helper::returnError(Lang::get('messages.max_questions').$questions_limit);
         }
@@ -1689,7 +1694,7 @@ class teacherController extends Controller
           'id'           => $new_exam->id,
           'total_degree' => $arr['degree'],
           'total_length' => $arr['length'],
-          'created_at'   => date('Y-m-d H:m:s', strtotime($new_exam->created_at))
+          'created_at'   => $now
         ]);  
        }catch(Exception $e){
           if($e instanceof ValidationException) {
