@@ -15,7 +15,7 @@ class Handler extends ExceptionHandler
     public function render($request, \Exception $e)
     {
     if ($e instanceof NotFoundHttpException || $e instanceof MethodNotAllowedHttpException){
-        return Helper::notFound('Method Not Found !');
+        return Helper::notFound($e->getMessage());
     }
     return parent::render($request, $e);
     }
