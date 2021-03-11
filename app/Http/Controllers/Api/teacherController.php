@@ -25,8 +25,9 @@ use Hash;
 class teacherController extends Controller
 {
     protected $responds_sequence = '#S$S#';
-    protected $userStorage = 'storage/profiles';
-
+    protected $userStorage       = 'storage/profiles';
+    protected $degreeFrom        = 0.1;
+    protected $degreeTo          = 1000;
 
 
     public function get_profile(Request $req)
@@ -992,7 +993,7 @@ class teacherController extends Controller
           'main_question'   => "nullable|string|max:100000",
           'question'        => "required|string|max:100000",
           'true_respond'    => "required|numeric|min:1|max:10",
-          'degree'          => "required|numeric|between:1,1000",
+          'degree'          => "required|numeric|between:{$this->degreeFrom},{$this->degreeTo}",
           'responds'        => "required|array|max:10",
           'responds.*'      => "required|string|max:100000|distinct",
           'outside_counter' => "nullable|string|max:255",
@@ -1042,7 +1043,7 @@ class teacherController extends Controller
           'main_question'   => "nullable|string|max:100000",
           'question'        => "required|string|max:100000",
           'true_respond'    => "nullable|string|max:100000",
-          'degree'          => "required|numeric|between:1,1000",
+          'degree'          => "required|numeric|between:{$this->degreeFrom},{$this->degreeTo}",
           'outside_counter' => "nullable|string|max:255",
           'inside_counter'  => "required|string|max:255",
         ]);
@@ -1146,7 +1147,7 @@ class teacherController extends Controller
           'main_question'   => "nullable|string|max:100000",
           'question'        => "required|string|max:100000",
           'true_respond'    => "required|numeric|min:1|max:10",
-          'degree'          => "required|numeric|between:1,1000",
+          'degree'          => "required|numeric|between:{$this->degreeFrom},{$this->degreeTo}",
           'responds'        => "required|array|max:10",
           'responds.*'      => "required|string|max:100000|distinct",
           'outside_counter' => "nullable|string|max:255",
@@ -1204,7 +1205,7 @@ class teacherController extends Controller
           'main_question'   => "nullable|string|max:100000",
           'question'        => "required|string|max:100000",
           'true_respond'    => "nullable|string|max:100000",
-          'degree'          => "required|numeric|between:1,1000",
+          'degree'          => "required|numeric|between:{$this->degreeFrom},{$this->degreeTo}",
           'outside_counter' => "nullable|string|max:255",
           'inside_counter'  => "required|string|max:255",
         ]);
