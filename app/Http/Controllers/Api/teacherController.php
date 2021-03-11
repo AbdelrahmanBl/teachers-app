@@ -1648,7 +1648,6 @@ class teacherController extends Controller
     public function merge_exams(Request $req)
     {
       try{
-        return Question::whereIn('exam_id',$req->input('exam_id'))->delete();
         $teacher_id      = $req->get('id');
         $req->validate([
           'exam_id'         => "required|array",
