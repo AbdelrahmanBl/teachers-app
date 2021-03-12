@@ -147,7 +147,7 @@ class studentController extends Controller
         $exam_data   = $exam_model->first(['exam_name','desc','degree','question_no','duration','is_rtl']);
 
         $question_model = Question::where('exam_id',$exam_id);
-        $question_data  = $question_model->get(['_id','image','question_type','main_question','question','responds','outside_counter','inside_counter','degree']);
+        $question_data  = $question_model->get(['_id','image','question_type','main_question','question','responds','outside_counter','sub_outside_counter','inside_counter','degree']);
 
         $notifications = Helper::getNotificationCount($student_id);
 
@@ -276,6 +276,7 @@ class studentController extends Controller
           $map['student_images']  = $solve->getImages;
           $map['student_degree']  = $solve->degree;
           $map['outside_counter'] = $value['outside_counter'];
+          $map['sub_outside_counter'] = $value['sub_outside_counter'];
           $map['inside_counter']  = $value['inside_counter'];
           return $map;
         });

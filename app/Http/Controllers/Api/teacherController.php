@@ -276,7 +276,7 @@ class teacherController extends Controller
         $model_data  = $model->first(['id','exam_name','degree','duration','is_published','year','status','desc','is_rtl','created_at']);
 
         $question_model = Question::where('exam_id',$exam_id);
-        $question_data  = $question_model->get(['_id','image','question_type','main_question','question','true_respond','responds','outside_counter','inside_counter','degree','created_at']);
+        $question_data  = $question_model->get(['_id','image','question_type','main_question','question','true_respond','responds','outside_counter','sub_outside_counter','inside_counter','degree','created_at']);
 
         $package_id     = $req->get('package_id');
         $exams_number   = $req->get('exams_number');
@@ -989,6 +989,7 @@ class teacherController extends Controller
           'responds'        => "required|array|max:10",
           'responds.*'      => "required|string|max:100000|distinct",
           'outside_counter' => "nullable|string|max:255",
+          'sub_outside_counter' => "nullable|string|max:255",
           'inside_counter'  => "required|string|max:255",
         ]);
         $id               = (int)$req->input('exam_id');
@@ -1006,7 +1007,7 @@ class teacherController extends Controller
 
         $degree           =  (double)$req->input('degree');
         
-        $my_arr = $req->all(['main_question','question','true_respond','outside_counter','inside_counter']);
+        $my_arr = $req->all(['main_question','question','true_respond','outside_counter','sub_outside_counter','inside_counter']);
         $my_arr['responds']      = $responds;
         // $my_arr['image']         = NULL;
         $my_arr['question_type'] = 'M';
@@ -1037,6 +1038,7 @@ class teacherController extends Controller
           'true_respond'    => "nullable|string|max:100000",
           'degree'          => "required|numeric|between:{$this->degreeFrom},{$this->degreeTo}",
           'outside_counter' => "nullable|string|max:255",
+          'sub_outside_counter' => "nullable|string|max:255",
           'inside_counter'  => "required|string|max:255",
         ]);
         $id               = (int)$req->input('exam_id');
@@ -1050,7 +1052,7 @@ class teacherController extends Controller
           
         $degree           =  (double)$req->input('degree');
         
-        $my_arr = $req->all(['main_question','question','true_respond','outside_counter','inside_counter']);
+        $my_arr = $req->all(['main_question','question','true_respond','outside_counter','sub_outside_counter','inside_counter']);
         // $my_arr['image']         = NULL;
         $my_arr['question_type'] = 'W';
         $my_arr['degree']        = $degree;
@@ -1143,6 +1145,7 @@ class teacherController extends Controller
           'responds'        => "required|array|max:10",
           'responds.*'      => "required|string|max:100000|distinct",
           'outside_counter' => "nullable|string|max:255",
+          'sub_outside_counter' => "nullable|string|max:255",
           'inside_counter'  => "required|string|max:255",
         ]);
         $exam_id         = (int)$req->input('exam_id');
@@ -1170,7 +1173,7 @@ class teacherController extends Controller
 
         $degree           =  (double)$req->input('degree');
 
-        $my_arr = $req->all(['main_question','question','true_respond','outside_counter','inside_counter']);
+        $my_arr = $req->all(['main_question','question','true_respond','outside_counter','sub_outside_counter','inside_counter']);
         $my_arr['responds']      = $responds;
         $my_arr['degree']        = $degree;
 
@@ -1199,6 +1202,7 @@ class teacherController extends Controller
           'true_respond'    => "nullable|string|max:100000",
           'degree'          => "required|numeric|between:{$this->degreeFrom},{$this->degreeTo}",
           'outside_counter' => "nullable|string|max:255",
+          'sub_outside_counter' => "nullable|string|max:255",
           'inside_counter'  => "required|string|max:255",
         ]);
         $exam_id         = (int)$req->input('exam_id');
@@ -1220,7 +1224,7 @@ class teacherController extends Controller
           return Helper::returnError(Lang::get('messages.published'));
 
         $degree           =  (double)$req->input('degree');
-        $my_arr = $req->all(['main_question','question','true_respond','outside_counter','inside_counter']);
+        $my_arr = $req->all(['main_question','question','true_respond','outside_counter','sub_outside_counter','inside_counter']);
         $my_arr['degree']        = $degree;
 
         $new_degree = $degree - $model_data->degree;    
