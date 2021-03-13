@@ -46,8 +46,8 @@ class handleInExam extends Command
         $exam_requests = ExamRequest::where($where)->get();
         $exam_requests_arr = array();
         $users_arr         = array();
-
-        $delay_time = 30; // In minutes
+ 
+        $delay_time = 10; // In minutes
         $now    = date('Y-m-d H:i:s');
         foreach($exam_requests as $exam_request){
             $layout = round((strtotime($now) - strtotime(  $exam_request->end_at  )) / 60,2);
