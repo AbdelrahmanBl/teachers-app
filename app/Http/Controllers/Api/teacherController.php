@@ -328,6 +328,7 @@ class teacherController extends Controller
           $map['student_images']  = $solve->getImages;
           $map['student_degree']  = $solve->degree;
           $map['outside_counter'] = $value['outside_counter'];
+          $map['sub_outside_counter'] = $value['sub_outside_counter'];
           $map['inside_counter']  = $value['inside_counter'];
           return $map;
         });
