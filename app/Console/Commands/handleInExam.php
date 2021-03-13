@@ -47,7 +47,7 @@ class handleInExam extends Command
         $exam_requests_arr = array();
         $users_arr         = array();
  
-        $delay_time = 10; // In minutes
+        $delay_time = 11; // In minutes
         $now    = date('Y-m-d H:i:s');
         foreach($exam_requests as $exam_request){
             $layout = round((strtotime($now) - strtotime(  $exam_request->end_at  )) / 60,2);
@@ -57,8 +57,8 @@ class handleInExam extends Command
             $users_arr[]          = $exam_request->student_id;
         }
         if(count($exam_requests_arr) > 0 && count($exam_requests_arr) == count($users_arr) ){
-        ExamRequest::whereIn('id',$exam_requests_arr)->update(['status' => 'DICONNECTED']);
-        User::whereIn('id',$users_arr)->update(['student_status' => 'WAITING']);
+            ExamRequest::whereIn('id',$exam_requests_arr)->update(['status' => 'DICONNECTED']);
+            User::whereIn('id',$users_arr)->update(['student_status' => 'WAITING']);
         }
         $this->info('Done !');
     }catch(Exception $e){

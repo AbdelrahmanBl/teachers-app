@@ -594,7 +594,7 @@ class studentController extends Controller
         if($exam_request_data->status != 'IN_EXAM')
           return Helper::returnError(Lang::get('messages.not_in_exam'));
         // Check Layout For Long Requests
-        $delay_time = 5; // In minutes
+        $delay_time = 10; // In minutes
         $layout = round((strtotime($now) - strtotime(  $exam_request_data->end_at  )) / 60,2);
         if($layout > $delay_time){
           $exam_request->update(['status' => 'DICONNECTED']);
