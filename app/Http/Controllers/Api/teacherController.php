@@ -1458,14 +1458,11 @@ class teacherController extends Controller
         ]);
         $request_ids  = $req->input('request_ids');
         
-        $exam_request = ExamRequest::whereIn('id',$request_ids);
+        $exam_request = ExamRequest::where('is_corrected',0)->whereIn('id',$request_ids);
         $exam_request_data = $exam_request->get();
 
         $notifications = array();
         foreach($exam_request_data as $request){
-          if($request->is_corrected == 1)
-            continue;
-
           $notify = new Notification();
           $notify->sender_id    = (int)$teacher_id;
           $notify->reciever_id  = (int)$request->student_id;
@@ -1486,6 +1483,42 @@ class teacherController extends Controller
         }
 
         $exam_request->update(['is_corrected' => 1]);
+        if($notifications)
+        Notification::insert($notifications);
+        return Helper::return([]);   
+       }catch(Exception $e){
+          if($e instanceof ValidationException) {
+             throw $e;
+          }
+         return Helper::returnError(Helper::returnException($e));
+        }
+    }
+    public function resend_exam(Request $req)
+    {try{
+        $teacher_id      = $req->get('id');
+        $req->validate([
+          'request_ids'     => "required|array",
+          'request_ids.*'   => "required|numeric|exists:exam_requests,id,teacher_id,{$teacher_id}",
+        ]);
+        $request_ids  = $req->input('request_ids');
+        
+        $exam_request = ExamRequest::where('status','DICONNECTED')->whereIn('id',$request_ids);
+        $exam_request_data = $exam_request->get();
+
+        $now = date('Y-m-d H:i:s');
+        $notifications = array();
+        foreach($exam_request_data as $request){
+          $notify = new Notification();
+          $notify->sender_id    = (int)$teacher_id;
+          $notify->reciever_id  = (int)$request->student_id;
+          $notify->event        = 'RS';
+          $notify->is_seen      = 0;
+          $notify->seen_at      = NULL;
+          $notify->created_at   = $now;
+          $notifications[] = $notify->toArray();
+        }
+
+        $exam_request->update(['status' => 'WAITING' , 'created_at' => $now]);
         if($notifications)
         Notification::insert($notifications);
         return Helper::return([]);   
