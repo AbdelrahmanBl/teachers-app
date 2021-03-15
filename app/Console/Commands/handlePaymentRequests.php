@@ -42,6 +42,7 @@ class handlePaymentRequests extends Command
      */
     public function handle()
     {
+        // Every Day
         try {
         $appointments  = Appointment::get();
         $update_ids    = [];  // IDs Of Appointments

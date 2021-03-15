@@ -39,6 +39,7 @@ class handleInExam extends Command
      */
     public function handle()
     {
+        // Every 5 Min
         try{
         $where  = array(
             'status'   => 'IN_EXAM',
