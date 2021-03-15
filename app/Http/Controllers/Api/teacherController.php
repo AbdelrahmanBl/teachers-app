@@ -1412,21 +1412,22 @@ class teacherController extends Controller
         $total_degree = 0;
         // $total_exam_degree = 0;
         foreach( $marks as $mark ){
+          $teacher_degree = round((double)$mark['degree'],1,PHP_ROUND_HALF_DOWN);
           $question = $questions->where('_id',$mark['question_id'])->first();
           if($question->question_type != 'W')
             return Helper::returnError(Lang::get('messages.not_allowed'));
-          if((double)$mark['degree'] > $question->degree)
+          if($teacher_degree > $question->degree)
             return Helper::returnError(Lang::get('messages.not_allowed'));
 
           $solve_item = $solves->where('_id',$mark['id']);
           $solve_item_data = $solve_item->first();
           if($solve_item_data->degree != NULL){
-            $new_degree = (double)$mark['degree'] - $solve_item_data->degree;
+            $new_degree = $teacher_degree - $solve_item_data->degree;
             if($new_degree != 0)
               $solve::where('_id',$mark['id'])->increment('degree',$new_degree);
           }
           else{ 
-            $new_degree    = (double)$mark['degree'];
+            $new_degree    = $teacher_degree;
             $solve::where('_id',$mark['id'])->update(['degree' => $new_degree]);
           }
 
