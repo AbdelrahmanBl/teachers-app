@@ -334,24 +334,26 @@ class studentController extends Controller
         $student_id      = (int)$req->get('id');
         $new_count       = (int)$req->get('unseen_count'); 
 
-        $where = array(
-          'student_id'  => $student_id,
-          'status'      => 'ON'
-        );
-        $subscrptions     = Subscrption::where($where)->get();
-        $subscrptions_arr = array();
-        foreach($subscrptions as $subscrption){
-          if(!in_array($subscrption->teacher_id, $subscrptions_arr))
-            $subscrptions_arr[] = (int)$subscrption->teacher_id;
-        }
+        // $where = array(
+        //   'student_id'  => $student_id,
+        //   'status'      => 'ON'
+        // );
+        // $subscrptions     = Subscrption::where($where)->get();
+        // $subscrptions_arr = array();
+        // foreach($subscrptions as $subscrption){
+        //   if(!in_array($subscrption->teacher_id, $subscrptions_arr))
+        //     $subscrptions_arr[] = (int)$subscrption->teacher_id;
+        // }
  
         $where = array(
           'reciever_id'   => $student_id,
         );
         $where[] = ['created_at','<=',date('Y-m-d H:i:s')];
 
-        $notifications_seen = Notification::whereIn('sender_id',$subscrptions_arr)->where($where)->where('is_seen',1)->orderBy('created_at','DESC')->paginate(4);
-        $notifications_not_seen  = Notification::whereIn('sender_id',$subscrptions_arr)->where($where)->where('is_seen',0)->limit($new_count);
+        // whereIn('sender_id',$subscrptions_arr)->
+        // whereIn('sender_id',$subscrptions_arr)->
+        $notifications_seen = Notification::where($where)->where('is_seen',1)->orderBy('created_at','DESC')->paginate(4);
+        $notifications_not_seen  = Notification::where($where)->where('is_seen',0)->limit($new_count);
         $notifications_not_seen_data = $notifications_not_seen->get();
 
         $senders           = array();

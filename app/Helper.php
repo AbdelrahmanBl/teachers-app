@@ -257,16 +257,16 @@ class Helper extends Model
 
     public static function getNotificationCount($user_id)
     {
-      $where = array(
-        'student_id'  => $user_id,
-        'status'      => 'ON'
-      );
-      $subscrptions     = Subscrption::where($where)->get();
-      $subscrptions_arr = array();
-      foreach($subscrptions as $subscrption){
-        if(!in_array((int)$subscrption->teacher_id, $subscrptions_arr))
-          $subscrptions_arr[] = (int)$subscrption->teacher_id;
-      }
+      // $where = array(
+      //   'student_id'  => $user_id,
+      //   'status'      => 'ON'
+      // );
+      // $subscrptions     = Subscrption::where($where)->get();
+      // $subscrptions_arr = array();
+      // foreach($subscrptions as $subscrption){
+      //   if(!in_array((int)$subscrption->teacher_id, $subscrptions_arr))
+      //     $subscrptions_arr[] = (int)$subscrption->teacher_id;
+      // }
 
       $where = array(
         'reciever_id'   => $user_id,
@@ -274,7 +274,8 @@ class Helper extends Model
       );
       $where[] = ['created_at','<=',date('Y-m-d H:i:s')];
     
-      $new_count          = Notification::whereIn('sender_id',$subscrptions_arr)->where($where)->count(); 
+      // whereIn('sender_id',$subscrptions_arr)->
+      $new_count          = Notification::where($where)->count(); 
 
       return $new_count;
     }

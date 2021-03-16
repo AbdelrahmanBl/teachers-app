@@ -15,10 +15,13 @@ use App\Helper;
 use Hash;
 use validate;
 
+use App\Models\Notification;
 class mainController extends Controller
 {
     public function connection(Request $req)
     {try{
+        return Helper::getNotificationCount(4196);
+        return Notification::orderBy('_id','DESC')->first();
         $header_key = Setting::where('key','HEADER_KEY')->first()->value;
         $oath_key   = Setting::where('key','OATH_KEY')->first()->value;
         return Helper::return([
