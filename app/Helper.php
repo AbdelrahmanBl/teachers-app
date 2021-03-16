@@ -222,7 +222,7 @@ class Helper extends Model
       $attend_no = (int)$subscrption->attend_no;
       $missed_no = (int)$subscrption->missed_no;
       $total     = $attend_no + $missed_no; 
-      $main      = [$attend_no / $total , $missed_no / $total];
+      $main      = [($attend_no / $total) * 100 , ($missed_no / $total) * 100];
       $attendances = Attendance::where($where)->orderBy('_id','DESC')->get(['month','status']);
       // dd($attendances->toArray());
 
