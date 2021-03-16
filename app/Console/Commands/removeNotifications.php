@@ -41,7 +41,7 @@ class removeNotifications extends Command
         // Every Day
         try {
         $now = date('Y-m-d H:i:s');
-        $notifications = Notification::whereIn('event',['PE','ME','RS'])->where('created_at','<',$now)->get();
+        $notifications = Notification::whereIn('event',['PE','ME','RS','PR'])->where('created_at','<',$now)->get();
         $deleted = [];
         foreach($notifications as $notification) {
             $from   = strtotime(explode(' ',$notification->created_at)[0]);
