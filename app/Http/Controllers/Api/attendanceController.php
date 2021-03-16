@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 use App\Models\AttendanceRepo;
 use App\Models\Attendance;
+use App\Models\Notification;
 use App\Models\Appointment;
 use App\Models\Subscrption;
 use App\Models\User;
@@ -97,6 +98,7 @@ class attendanceController extends Controller
                     'teacher_id'         => $teacher_id,
                     'student_id'         => (int)$student_id,
                     'attendance_repo_id'    => $id,
+                    'month'              => $attendance_repo->month,
                     'status'             => false
                 ];
 
