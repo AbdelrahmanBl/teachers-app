@@ -55,7 +55,7 @@ class paymentController extends Controller
             foreach($subscrptions->pluck('student_id') as $student_id) {
                 $payment = [
                     'teacher_id'         => $teacher_id,
-                    'student_id'         => $student_id,
+                    'student_id'         => (int)$student_id,
                     'payment_repo_id'    => $id,
                     'status'             => false
                 ];
@@ -88,7 +88,7 @@ class paymentController extends Controller
             foreach($new_registers as $student_id) {
                 $payment = [
                     'teacher_id'         => $teacher_id,
-                    'student_id'         => $student_id,
+                    'student_id'         => (int)$student_id,
                     'payment_repo_id'    => $id,
                     'status'             => false
                 ];

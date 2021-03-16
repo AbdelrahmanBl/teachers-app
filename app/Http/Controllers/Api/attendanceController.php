@@ -61,7 +61,7 @@ class attendanceController extends Controller
             foreach($subscrptions->pluck('student_id') as $student_id) {
                 $attendance = [
                     'teacher_id'         => $teacher_id,
-                    'student_id'         => $student_id,
+                    'student_id'         => (int)$student_id,
                     'attendance_repo_id' => $id,
                     'month'              => $attendance_repo->month,
                     'status'             => false
@@ -95,7 +95,7 @@ class attendanceController extends Controller
             foreach($new_registers as $student_id) {
                 $attendance = [
                     'teacher_id'         => $teacher_id,
-                    'student_id'         => $student_id,
+                    'student_id'         => (int)$student_id,
                     'attendance_repo_id'    => $id,
                     'status'             => false
                 ];
@@ -368,6 +368,7 @@ class attendanceController extends Controller
 
     public function student_statistics(Request $req,$student_id)
     {
+        return Attendance::get();
         $teacher_id = $req->get('id');
         $student_id = (int)$student_id;
         
