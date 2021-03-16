@@ -49,14 +49,14 @@ class handlePaymentRequests extends Command
         $notifications = []; 
         foreach($appointments as $appointment) {
             if($appointment->current_class_no == $appointment->max_class_no) {
-                $update_ids[] = $appointment->id;
+                $update_ids[] = (int)$appointment->id;
             }
         }
         $subscrptions = Subscrption::whereIn('appointment_id',$update_ids)->get();
         foreach($subscrptions as $subscrption) {
             $notify = new Notification();
-            $notify->sender_id    = $subscrption->teacher_id;
-            $notify->reciever_id  = $subscrption->student_id;
+            $notify->sender_id    = (int)$subscrption->teacher_id;
+            $notify->reciever_id  = (int)$subscrption->student_id;
             $notify->event        = 'PR';
             $notify->is_seen      = 0;
             $notify->seen_at      = NULL;
