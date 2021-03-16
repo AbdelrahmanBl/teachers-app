@@ -368,7 +368,6 @@ class attendanceController extends Controller
 
     public function student_statistics(Request $req,$student_id)
     {
-        return Attendance::get();
         $teacher_id = $req->get('id');
         $student_id = (int)$student_id;
         
