@@ -1365,7 +1365,7 @@ class teacherController extends Controller
         $req->validate([
           'id'          => "required|numeric|exists:subscrptions,student_id,teacher_id,{$teacher_id}",
         ]);
-        $id         = $req->input('id');
+        $id         = (int)$req->input('id');
 
         $model = new Subscrption();
         $where = array(
@@ -1374,6 +1374,15 @@ class teacherController extends Controller
         );
         $model = $model::where($where);
         $status = Helper::disable($model,'status','ON','OFF','ON','OFF');
+
+        $notify = new Notification();
+        $notify->sender_id    = (int)$teacher_id;
+        $notify->reciever_id  = (int)$id;
+        $notify->event        = $status;
+        $notify->is_seen      = 0;
+        $notify->seen_at      = NULL;
+        $notify->created_at   = date('Y-m-d H:i:s');
+        $notify->save();
         
         return Helper::return([
           'status' => $status
