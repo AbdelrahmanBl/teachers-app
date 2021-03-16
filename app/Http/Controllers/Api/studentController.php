@@ -138,10 +138,10 @@ class studentController extends Controller
         if($exam_request_data->status != 'IN_EXAM')
           return Helper::returnError(Lang::get('messages.not_in_exam'));
         if($exam_request_data->end_at < date('Y-m-d H:i:s')){
-          $exam_request->update(['status' => 'DICONNECTED']);
+          // $exam_request->update(['status' => 'DICONNECTED']);
           return Helper::returnError(Lang::get('messages.not_in_exam'));
         }
-
+ 
         $exam_id     = (int)$exam_request_data->exam_id;
         $exam_model  = Exam::where('id',$exam_id);
         $exam_data   = $exam_model->first(['exam_name','desc','degree','question_no','duration','is_rtl']);
