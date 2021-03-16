@@ -219,7 +219,10 @@ class Helper extends Model
       if(!$subscrption)
         return ['error' => 1];
 
-      $main = [$subscrption->attend_no,$subscrption->missed_no];
+      $attend_no = (int)$subscrption->attend_no;
+      $missed_no = (int)$subscrption->missed_no;
+      $total     = $attend_no + $missed_no; 
+      $main      = [$attend_no / $total , $missed_no / $total];
       $attendances = Attendance::where($where)->orderBy('_id','DESC')->get(['month','status']);
       // dd($attendances->toArray());
 
